@@ -632,6 +632,10 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
     private boolean drawVerified;
     private boolean drawBotVerified;
     private boolean drawPremium;
+    // Cryptogram: собственный бейдж "официальный", независимый от настоящей
+    // верификации Telegram (drawVerified выше). Заполняется по ID из
+    // CryptogramBadges — списка, который подгружается отдельно от сервера.
+    private org.telegram.messenger.CryptogramBadges.BadgeType cryptogramBadge = org.telegram.messenger.CryptogramBadges.BadgeType.NONE;
     private final View emojiStatusView;
     private final AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable emojiStatus;
     private final AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable botVerification;
@@ -1490,6 +1494,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                             drawVerified = !forbidVerified && chat.verified;
                             drawBotVerified = !forbidVerified && chat.bot_verification_icon != 0;
                         }
+                        cryptogramBadge = org.telegram.messenger.CryptogramBadges.getBadge(-chat.id);
                     } else if (user != null) {
                         dialogBotVerificationIcon = DialogObject.getBotVerificationIcon(user);
                         if (user.scam) {
@@ -1502,6 +1507,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                             drawVerified = !forbidVerified && user.verified;
                             drawBotVerified = !forbidVerified && !UserObject.isUserSelf(user) && user.bot_verification_icon != 0;
                         }
+                        cryptogramBadge = org.telegram.messenger.CryptogramBadges.getBadge(user.id);
                         drawPremium = MessagesController.getInstance(currentAccount).isPremiumUser(user) && UserConfig.getInstance(currentAccount).clientUserId != user.id && user.id != 0;
                         if (drawPremium) {
                             Long emojiStatusId = UserObject.getEmojiStatusDocumentId(user);
@@ -2376,6 +2382,20 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             if (LocaleController.isRTL) {
                 nameLeft += namePaddingEnd;
             }
+        }
+        // Cryptogram: вставляем иконку бейджа как часть текста имени через
+        // ImageSpan — так её ширина корректно учитывается во всех дальнейших
+        // расчётах переноса и обрезки строки, без необходимости лезть в
+        // сложную отдельную систему отрисовки вроде dialogs_verifiedDrawable.
+        if (cryptogramBadge != org.telegram.messenger.CryptogramBadges.BadgeType.NONE && nameString != null) {
+            android.graphics.drawable.Drawable badgeDrawable = ContextCompat.getDrawable(
+                    ApplicationLoader.applicationContext, R.drawable.cryptogram_badge).mutate();
+            int size = dp(18);
+            badgeDrawable.setBounds(0, 0, size, size);
+            SpannableStringBuilder badgeBuilder = new SpannableStringBuilder("  ");
+            badgeBuilder.setSpan(new android.text.style.ImageSpan(badgeDrawable, android.text.style.ImageSpan.ALIGN_BOTTOM), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            badgeBuilder.append(nameString);
+            nameString = badgeBuilder;
         }
         try {
             int ellipsizeWidth = nameWidth - dp(12);

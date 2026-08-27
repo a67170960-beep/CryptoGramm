@@ -304,6 +304,12 @@ public class SharedConfig {
     public static boolean ghostModeReadStatus = false;
     // ghostModeGroupReadReceipts — не подтверждать прочтение сообщений в группах и каналах (см. MessagesController.completeReadTask)
     public static boolean ghostModeGroupReadReceipts = false;
+    // Функции Cryptogram, не связанные с Режимом Призрака
+    public static boolean disableAutoplayVideo = false;
+    public static boolean disableAutoSaveMedia = false;
+    public static boolean hideLastSeenDate = false;
+    public static boolean disableLinkPreviewGeneration = false;
+    public static boolean compactChatList = false;
     public static boolean saveStreamMedia = true;
     public static boolean pauseMusicOnRecord = false;
     public static boolean pauseMusicOnMedia = false;
@@ -634,6 +640,11 @@ public class SharedConfig {
             ghostModeTyping = preferences.getBoolean("ghostModeTyping", false);
             ghostModeReadStatus = preferences.getBoolean("ghostModeReadStatus", false);
             ghostModeGroupReadReceipts = preferences.getBoolean("ghostModeGroupReadReceipts", false);
+            disableAutoplayVideo = preferences.getBoolean("disableAutoplayVideo", false);
+            disableAutoSaveMedia = preferences.getBoolean("disableAutoSaveMedia", false);
+            hideLastSeenDate = preferences.getBoolean("hideLastSeenDate", false);
+            disableLinkPreviewGeneration = preferences.getBoolean("disableLinkPreviewGeneration", false);
+            compactChatList = preferences.getBoolean("compactChatList", false);
             suggestStickers = preferences.getInt("suggestStickers", 0);
             suggestAnimatedEmoji = preferences.getBoolean("suggestAnimatedEmoji", true);
             overrideDevicePerformanceClass = preferences.getInt("overrideDevicePerformanceClass", -1);
@@ -1391,6 +1402,46 @@ public class SharedConfig {
         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("ghostModeGroupReadReceipts", ghostModeGroupReadReceipts);
+        editor.apply();
+    }
+
+    public static void toggleDisableAutoplayVideo() {
+        disableAutoplayVideo = !disableAutoplayVideo;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("disableAutoplayVideo", disableAutoplayVideo);
+        editor.apply();
+    }
+
+    public static void toggleDisableAutoSaveMedia() {
+        disableAutoSaveMedia = !disableAutoSaveMedia;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("disableAutoSaveMedia", disableAutoSaveMedia);
+        editor.apply();
+    }
+
+    public static void toggleHideLastSeenDate() {
+        hideLastSeenDate = !hideLastSeenDate;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("hideLastSeenDate", hideLastSeenDate);
+        editor.apply();
+    }
+
+    public static void toggleDisableLinkPreviewGeneration() {
+        disableLinkPreviewGeneration = !disableLinkPreviewGeneration;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("disableLinkPreviewGeneration", disableLinkPreviewGeneration);
+        editor.apply();
+    }
+
+    public static void toggleCompactChatList() {
+        compactChatList = !compactChatList;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("compactChatList", compactChatList);
         editor.apply();
     }
 
