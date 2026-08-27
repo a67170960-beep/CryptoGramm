@@ -26,10 +26,13 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew :TMessagesProj_AppStandalone:assembleRelease --stacktrace
+        # Собираем debug-версию вместо release: у release нет подписи (keystore),
+        # поэтому Android отказывался устанавливать такой APK ("Приложение не установлено").
+        # Debug-сборка подписывается стандартным отладочным ключом Android SDK автоматически.
+        run: ./gradlew :TMessagesProj_AppStandalone:assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
+          name: app-debug
           path: TMessagesProj_AppStandalone/build/outputs/apk/**/*.apk
