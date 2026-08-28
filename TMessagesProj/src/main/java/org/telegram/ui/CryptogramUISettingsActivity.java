@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.BaseFragment;
@@ -124,7 +125,7 @@ public class CryptogramUISettingsActivity extends BaseFragment {
             } else if (position == animEnabledRow) {
                 SharedConfig.toggleAnimationsEnabled();
                 if (view instanceof TextCheckCell) {
-                    ((TextCheckCell) view).setChecked(SharedConfig.animationsEnabled);
+                    ((TextCheckCell) view).setChecked(SharedConfig.cryptogramAnimationsEnabled);
                 }
             } else if (position == roundedBubblesRow) {
                 SharedConfig.toggleRoundedBubbles();
@@ -280,7 +281,7 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                     if (position == blurEnabledRow) {
                         checkCell.setTextAndCheck("Размытие при прокрутке списка чатов", SharedConfig.chatListBlurEnabled, true);
                     } else if (position == animEnabledRow) {
-                        checkCell.setTextAndCheck("Включить анимации интерфейса", SharedConfig.animationsEnabled, true);
+                        checkCell.setTextAndCheck("Включить анимации интерфейса", SharedConfig.cryptogramAnimationsEnabled, true);
                     } else if (position == roundedBubblesRow) {
                         checkCell.setTextAndCheck("Скруглённые пузыри сообщений", SharedConfig.roundedBubblesEnabled, true);
                     } else if (position == vibrationRow) {

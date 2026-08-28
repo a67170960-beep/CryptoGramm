@@ -313,7 +313,7 @@ public class SharedConfig {
     // Cryptogram: настройки внешнего вида (UI)
     public static boolean chatListBlurEnabled = false;
     public static int chatListBlurIntensity = 50; // 0-100
-    public static boolean animationsEnabled = true;
+    public static boolean cryptogramAnimationsEnabled = true;
     public static int animationSpeedPercent = 100; // 50-200
     public static boolean roundedBubblesEnabled = true;
     public static int messageBubbleRoundness = 50; // 0-100
@@ -658,7 +658,7 @@ public class SharedConfig {
             compactChatList = preferences.getBoolean("compactChatList", false);
             chatListBlurEnabled = preferences.getBoolean("chatListBlurEnabled", false);
             chatListBlurIntensity = preferences.getInt("chatListBlurIntensity", 50);
-            animationsEnabled = preferences.getBoolean("animationsEnabled", true);
+            cryptogramAnimationsEnabled = preferences.getBoolean("cryptogramAnimationsEnabled", true);
             animationSpeedPercent = preferences.getInt("animationSpeedPercent", 100);
             roundedBubblesEnabled = preferences.getBoolean("roundedBubblesEnabled", true);
             messageBubbleRoundness = preferences.getInt("messageBubbleRoundness", 50);
@@ -1479,9 +1479,9 @@ public class SharedConfig {
     }
 
     public static void toggleAnimationsEnabled() {
-        animationsEnabled = !animationsEnabled;
+        cryptogramAnimationsEnabled = !cryptogramAnimationsEnabled;
         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
-        preferences.edit().putBoolean("animationsEnabled", animationsEnabled).apply();
+        preferences.edit().putBoolean("cryptogramAnimationsEnabled", cryptogramAnimationsEnabled).apply();
     }
 
     public static void setAnimationSpeedPercent(int value) {
