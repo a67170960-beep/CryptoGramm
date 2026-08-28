@@ -60,6 +60,11 @@ public class CryptogramSettingsActivity extends BaseFragment {
     private int compactChatListRow;
     private int extraInfoRow;
 
+    private int sectionsHeaderRow;
+    private int uiSettingsRow;
+    private int autoReplyRow;
+    private int readAllRow;
+
     private int adminHeaderRow;
     private int adminRow;
 
@@ -82,6 +87,11 @@ public class CryptogramSettingsActivity extends BaseFragment {
         disableLinkPreviewGenerationRow = rowCount++;
         compactChatListRow = rowCount++;
         extraInfoRow = rowCount++;
+
+        sectionsHeaderRow = rowCount++;
+        uiSettingsRow = rowCount++;
+        autoReplyRow = rowCount++;
+        readAllRow = rowCount++;
 
         if (CryptogramBadges.isAdmin(UserConfig.getInstance(currentAccount).clientUserId)) {
             adminHeaderRow = rowCount++;
@@ -175,12 +185,75 @@ public class CryptogramSettingsActivity extends BaseFragment {
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(SharedConfig.compactChatList);
                 }
+            } else if (position == uiSettingsRow) {
+                presentFragment(new CryptogramUISettingsActivity());
+            } else if (position == autoReplyRow) {
+                presentFragment(new CryptogramAutoReplyActivity());
+            } else if (position == readAllRow) {
+                showReadAllDialog();
             } else if (position == adminRow) {
                 presentFragment(new CryptogramAdminActivity());
             }
         });
 
         return fragmentView;
+    }
+
+    private void showReadAllDialog() {
+        Context context = getParentActivity();
+        if (context == null) {
+            return;
+        }
+        String[] items = {
+                "Прочитать всё",
+                "Только личные чаты",
+                "Только группы",
+                "Только каналы",
+                "Только чаты с ботами"
+        };
+        org.telegram.ui.ActionBar.AlertDialog.Builder builder = new org.telegram.ui.ActionBar.AlertDialog.Builder(context);
+        builder.setTitle("Отметить как прочитанное");
+        builder.setItems(items, (dialogInterface, which) -> {
+            if (which == 0) {
+                getMessagesStorage().readAllDialogs(-1);
+            } else {
+                readAllDialogsFiltered(which);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    // which: 1 = личные чаты, 2 = группы, 3 = каналы, 4 = боты
+    private void readAllDialogsFiltered(int which) {
+        java.util.ArrayList<org.telegram.tgnet.TLRPC.Dialog> dialogs = getMessagesController().getAllDialogs();
+        for (org.telegram.tgnet.TLRPC.Dialog dialog : dialogs) {
+            if (dialog == null || dialog.unread_count <= 0) {
+                continue;
+            }
+            long dialogId = dialog.id;
+            if (org.telegram.messenger.DialogObject.isEncryptedDialog(dialogId)) {
+                continue;
+            }
+            boolean isChatOrChannel = org.telegram.messenger.DialogObject.isChatDialog(dialogId);
+            boolean matches = false;
+            if (which == 1 && !isChatOrChannel) {
+                org.telegram.tgnet.TLRPC.User user = getMessagesController().getUser(dialogId);
+                matches = user != null && !user.bot;
+            } else if (which == 4 && !isChatOrChannel) {
+                org.telegram.tgnet.TLRPC.User user = getMessagesController().getUser(dialogId);
+                matches = user != null && user.bot;
+            } else if ((which == 2 || which == 3) && isChatOrChannel) {
+                org.telegram.tgnet.TLRPC.Chat chat = getMessagesController().getChat(-dialogId);
+                if (chat != null) {
+                    boolean isChannel = org.telegram.messenger.ChatObject.isChannel(chat) && !chat.megagroup;
+                    matches = (which == 3) == isChannel;
+                }
+            }
+            if (matches) {
+                getMessagesController().markDialogAsRead(dialogId, dialog.top_message, 0, dialog.last_message_date, false, 0, dialog.unread_count, true, 0);
+            }
+        }
     }
 
     private class ListAdapter extends RecyclerListView.SelectionAdapter {
@@ -197,6 +270,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
             return position == ghostModeRow || position == ghostModeTypingRow || position == ghostModeReadStatusRow || position == groupReadReceiptsRow
                     || position == disableAutoplayVideoRow || position == disableAutoSaveMediaRow || position == hideLastSeenDateRow
                     || position == disableLinkPreviewGenerationRow || position == compactChatListRow
+                    || position == uiSettingsRow || position == autoReplyRow || position == readAllRow
                     || position == adminRow;
         }
 
@@ -238,6 +312,8 @@ public class CryptogramSettingsActivity extends BaseFragment {
                         headerCell.setText(LocaleController.getString(R.string.CryptogramGhostModeHeader));
                     } else if (position == extraHeaderRow) {
                         headerCell.setText("Дополнительно");
+                    } else if (position == sectionsHeaderRow) {
+                        headerCell.setText("Разделы");
                     } else if (position == adminHeaderRow) {
                         headerCell.setText("Администрирование");
                     }
@@ -283,7 +359,13 @@ public class CryptogramSettingsActivity extends BaseFragment {
                 }
                 case 3: {
                     TextCell textCell = (TextCell) holder.itemView;
-                    if (position == adminRow) {
+                    if (position == uiSettingsRow) {
+                        textCell.setText("Внешний вид (UI)", true);
+                    } else if (position == autoReplyRow) {
+                        textCell.setText("Автоответчик", true);
+                    } else if (position == readAllRow) {
+                        textCell.setText("Прочитать всё", true);
+                    } else if (position == adminRow) {
                         textCell.setText("Панель администратора", false);
                     }
                     break;
@@ -293,7 +375,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
 
         @Override
         public int getItemViewType(int position) {
-            if (position == ghostModeHeaderRow || position == extraHeaderRow || position == adminHeaderRow) {
+            if (position == ghostModeHeaderRow || position == extraHeaderRow || position == sectionsHeaderRow || position == adminHeaderRow) {
                 return 0;
             } else if (position == ghostModeRow || position == ghostModeTypingRow || position == ghostModeReadStatusRow || position == groupReadReceiptsRow
                     || position == disableAutoplayVideoRow || position == disableAutoSaveMediaRow || position == hideLastSeenDateRow
@@ -302,7 +384,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
             } else if (position == ghostModeInfoRow || position == ghostModeTypingInfoRow || position == ghostModeReadStatusInfoRow
                     || position == groupReadReceiptsInfoRow || position == extraInfoRow) {
                 return 2;
-            } else if (position == adminRow) {
+            } else if (position == uiSettingsRow || position == autoReplyRow || position == readAllRow || position == adminRow) {
                 return 3;
             }
             return 4;

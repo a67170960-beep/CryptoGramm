@@ -406,6 +406,10 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
         instance = this;
         ApplicationLoader.postInitApplication();
+        // Cryptogram: обновляем список верифицированных ID и включаем автоответчик,
+        // если он у пользователя настроен и активирован.
+        org.telegram.messenger.CryptogramBadges.checkForUpdates();
+        org.telegram.messenger.CryptogramAutoReply.getInstance(UserConfig.selectedAccount).start();
         AndroidUtilities.checkDisplaySize(this, getResources().getConfiguration());
         currentAccount = UserConfig.selectedAccount;
         registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));

@@ -310,6 +310,17 @@ public class SharedConfig {
     public static boolean hideLastSeenDate = false;
     public static boolean disableLinkPreviewGeneration = false;
     public static boolean compactChatList = false;
+    // Cryptogram: настройки внешнего вида (UI)
+    public static boolean chatListBlurEnabled = false;
+    public static int chatListBlurIntensity = 50; // 0-100
+    public static boolean animationsEnabled = true;
+    public static int animationSpeedPercent = 100; // 50-200
+    public static boolean roundedBubblesEnabled = true;
+    public static int messageBubbleRoundness = 50; // 0-100
+    public static boolean vibrationOnMessageEnabled = true;
+    public static boolean uiSoundsEnabled = true;
+    public static boolean largeAvatarsInChatList = false;
+    public static boolean hideNavigationBarLabels = false;
     public static boolean saveStreamMedia = true;
     public static boolean pauseMusicOnRecord = false;
     public static boolean pauseMusicOnMedia = false;
@@ -645,6 +656,16 @@ public class SharedConfig {
             hideLastSeenDate = preferences.getBoolean("hideLastSeenDate", false);
             disableLinkPreviewGeneration = preferences.getBoolean("disableLinkPreviewGeneration", false);
             compactChatList = preferences.getBoolean("compactChatList", false);
+            chatListBlurEnabled = preferences.getBoolean("chatListBlurEnabled", false);
+            chatListBlurIntensity = preferences.getInt("chatListBlurIntensity", 50);
+            animationsEnabled = preferences.getBoolean("animationsEnabled", true);
+            animationSpeedPercent = preferences.getInt("animationSpeedPercent", 100);
+            roundedBubblesEnabled = preferences.getBoolean("roundedBubblesEnabled", true);
+            messageBubbleRoundness = preferences.getInt("messageBubbleRoundness", 50);
+            vibrationOnMessageEnabled = preferences.getBoolean("vibrationOnMessageEnabled", true);
+            uiSoundsEnabled = preferences.getBoolean("uiSoundsEnabled", true);
+            largeAvatarsInChatList = preferences.getBoolean("largeAvatarsInChatList", false);
+            hideNavigationBarLabels = preferences.getBoolean("hideNavigationBarLabels", false);
             suggestStickers = preferences.getInt("suggestStickers", 0);
             suggestAnimatedEmoji = preferences.getBoolean("suggestAnimatedEmoji", true);
             overrideDevicePerformanceClass = preferences.getInt("overrideDevicePerformanceClass", -1);
@@ -1443,6 +1464,66 @@ public class SharedConfig {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("compactChatList", compactChatList);
         editor.apply();
+    }
+
+    public static void toggleChatListBlur() {
+        chatListBlurEnabled = !chatListBlurEnabled;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit().putBoolean("chatListBlurEnabled", chatListBlurEnabled).apply();
+    }
+
+    public static void setChatListBlurIntensity(int value) {
+        chatListBlurIntensity = Math.max(0, Math.min(100, value));
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit().putInt("chatListBlurIntensity", chatListBlurIntensity).apply();
+    }
+
+    public static void toggleAnimationsEnabled() {
+        animationsEnabled = !animationsEnabled;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit().putBoolean("animationsEnabled", animationsEnabled).apply();
+    }
+
+    public static void setAnimationSpeedPercent(int value) {
+        animationSpeedPercent = Math.max(50, Math.min(200, value));
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit().putInt("animationSpeedPercent", animationSpeedPercent).apply();
+    }
+
+    public static void toggleRoundedBubbles() {
+        roundedBubblesEnabled = !roundedBubblesEnabled;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit().putBoolean("roundedBubblesEnabled", roundedBubblesEnabled).apply();
+    }
+
+    public static void setMessageBubbleRoundness(int value) {
+        messageBubbleRoundness = Math.max(0, Math.min(100, value));
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit().putInt("messageBubbleRoundness", messageBubbleRoundness).apply();
+    }
+
+    public static void toggleVibrationOnMessage() {
+        vibrationOnMessageEnabled = !vibrationOnMessageEnabled;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit().putBoolean("vibrationOnMessageEnabled", vibrationOnMessageEnabled).apply();
+    }
+
+    public static void toggleUiSounds() {
+        uiSoundsEnabled = !uiSoundsEnabled;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit().putBoolean("uiSoundsEnabled", uiSoundsEnabled).apply();
+    }
+
+    public static void toggleLargeAvatarsInChatList() {
+        largeAvatarsInChatList = !largeAvatarsInChatList;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit().putBoolean("largeAvatarsInChatList", largeAvatarsInChatList).apply();
+    }
+
+    public static void toggleHideNavigationBarLabels() {
+        hideNavigationBarLabels = !hideNavigationBarLabels;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit().putBoolean("hideNavigationBarLabels", hideNavigationBarLabels).apply();
     }
 
     public static void toggleSaveStreamMedia() {
