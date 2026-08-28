@@ -3054,6 +3054,45 @@ public class LocaleController {
         return str.replace("<", "&lt;").replace(">", "&gt;").replace("& ", "&amp; ");
     }
 
+    // Cryptogram: сервер translations.telegram.org присылает оригинальные строки
+    // Telegram (там написано "Telegram"), и без этого фильтра они бы затирали
+    // наши переименованные строки при каждом обновлении языкового пакета —
+    // именно поэтому название "откатывалось" обратно после перезахода в чат.
+    // Ключи с юридическим/платёжным содержанием (Premium, Stars, Terms, ссылки
+    // на telegram.org) сознательно не трогаем — они описывают реальный сервис.
+    private static final java.util.Set<String> CRYPTOGRAM_KEEP_TELEGRAM_KEYS = new java.util.HashSet<String>() {{
+        add("TosDecline");
+        add("TosUpdateDecline");
+        add("TosDeclineDeleteAccount");
+        add("StorageUsageInfo");
+        add("SyncContactsDeleteText");
+        add("Page3Message");
+        add("DownloadedFilesMessage");
+        add("DidNotGetTheCodeInfo");
+        add("ContactsPermissionAlert");
+        add("PhoneNumberHelp");
+    }};
+
+    private static String cryptogramizeRemoteString(String key, String value) {
+        if (value == null || key == null) {
+            return value;
+        }
+        if (CRYPTOGRAM_KEEP_TELEGRAM_KEYS.contains(key)) {
+            return value;
+        }
+        boolean isLegalOrPayment = key.contains("Premium") || key.contains("Stars") || key.contains("Terms")
+                || key.contains("PrivacyPolicy") || value.contains("telegram.org") || value.contains("fragment.com")
+                || key.contains("Support") || value.contains("moderators") || value.contains("cloud servers")
+                || key.contains("Server") || key.contains("Ads");
+        if (isLegalOrPayment) {
+            return value;
+        }
+        if (value.contains("Telegram")) {
+            return value.replace("Telegram", "Cryptogram");
+        }
+        return value;
+    }
+
     public void saveRemoteLocaleStringsForCurrentLocale(final TLRPC.TL_langPackDifference difference, int currentAccount) {
         if (currentLocaleInfo == null) {
             return;
@@ -3106,14 +3145,14 @@ public class LocaleController {
             for (int a = 0; a < difference.strings.size(); a++) {
                 TLRPC.LangPackString string = difference.strings.get(a);
                 if (string instanceof TLRPC.TL_langPackString) {
-                    values.put(string.key, escapeString(string.value));
+                    values.put(string.key, cryptogramizeRemoteString(string.key, escapeString(string.value)));
                 } else if (string instanceof TLRPC.TL_langPackStringPluralized) {
-                    values.put(string.key + "_zero", string.zero_value != null ? escapeString(string.zero_value) : "");
-                    values.put(string.key + "_one", string.one_value != null ? escapeString(string.one_value) : "");
-                    values.put(string.key + "_two", string.two_value != null ? escapeString(string.two_value) : "");
-                    values.put(string.key + "_few", string.few_value != null ? escapeString(string.few_value) : "");
-                    values.put(string.key + "_many", string.many_value != null ? escapeString(string.many_value) : "");
-                    values.put(string.key + "_other", string.other_value != null ? escapeString(string.other_value) : "");
+                    values.put(string.key + "_zero", string.zero_value != null ? cryptogramizeRemoteString(string.key, escapeString(string.zero_value)) : "");
+                    values.put(string.key + "_one", string.one_value != null ? cryptogramizeRemoteString(string.key, escapeString(string.one_value)) : "");
+                    values.put(string.key + "_two", string.two_value != null ? cryptogramizeRemoteString(string.key, escapeString(string.two_value)) : "");
+                    values.put(string.key + "_few", string.few_value != null ? cryptogramizeRemoteString(string.key, escapeString(string.few_value)) : "");
+                    values.put(string.key + "_many", string.many_value != null ? cryptogramizeRemoteString(string.key, escapeString(string.many_value)) : "");
+                    values.put(string.key + "_other", string.other_value != null ? cryptogramizeRemoteString(string.key, escapeString(string.other_value)) : "");
                 } else if (string instanceof TLRPC.TL_langPackStringDeleted) {
                     values.remove(string.key);
                 }

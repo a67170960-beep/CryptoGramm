@@ -697,6 +697,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         items.add(SettingCell.Factory.of(8, IconBackgroundColors.CYAN.top, IconBackgroundColors.CYAN.bottom, R.drawable.settings_devices, getString(R.string.SettingsDevices), getString(R.string.SettingsDevicesInfo)));
         items.add(SettingCell.Factory.of(9, IconBackgroundColors.ORANGE_DEEP.top, IconBackgroundColors.ORANGE_DEEP.bottom, R.drawable.settings_power, getString(R.string.SettingsPowerSaving), getString(R.string.SettingsPowerSavingInfo)));
         items.add(SettingCell.Factory.of(10, IconBackgroundColors.PURPLE.top, IconBackgroundColors.PURPLE.bottom, R.drawable.settings_language, getString(R.string.SettingsLanguage), LocaleController.getCurrentLanguageName()));
+        items.add(SettingCell.Factory.of(999, 0xFF4E5DFF, 0xFF7B4EFF, R.drawable.ghost, getString(R.string.CryptogramSettings), null));
 
         items.add(UItem.asShadow(null));
 
@@ -823,6 +824,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 break;
             case 6:
                 presentSettingFragment(new DataSettingsActivity());
+                break;
+            case 999:
+                presentSettingFragment(new CryptogramSettingsActivity());
                 break;
             case 7:
                 presentSettingFragment(new FiltersSetupActivity());
