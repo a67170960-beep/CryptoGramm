@@ -947,15 +947,28 @@ public class SizeNotifierFrameLayout extends FrameLayout implements Theme.Colora
     }
 
     public static float getBlurRadius() {
+        float base;
         switch (SharedConfig.getDevicePerformanceClass()) {
             case SharedConfig.PERFORMANCE_CLASS_HIGH:
-                return 60;
+                base = 60;
+                break;
             case SharedConfig.PERFORMANCE_CLASS_AVERAGE:
-                return 4;
+                base = 4;
+                break;
             default:
             case SharedConfig.PERFORMANCE_CLASS_LOW:
-                return 3;
+                base = 3;
+                break;
         }
+        // Cryptogram: пользовательская настройка интенсивности размытия (0-100%)
+        // масштабирует базовый радиус, определённый по производительности
+        // устройства, не отменяя её — на слабых устройствах радиус всё равно
+        // не будет неоправданно большим даже при 100% интенсивности.
+        if (SharedConfig.chatListBlurEnabled) {
+            float multiplier = SharedConfig.chatListBlurIntensity / 50f; // 50% = обычная интенсивность (x1)
+            return base * multiplier;
+        }
+        return base;
     }
 
     protected float getBlurRadiusInternal() {

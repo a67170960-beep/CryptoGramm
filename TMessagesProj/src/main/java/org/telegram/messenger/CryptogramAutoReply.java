@@ -25,6 +25,15 @@ public class CryptogramAutoReply implements NotificationCenter.NotificationCente
     public static final HashMap<String, String> keywordReplies = new HashMap<>();
     // dialogId -> персональный ответ для конкретного пользователя/чата
     public static final HashMap<Long, String> perDialogReplies = new HashMap<>();
+    // Несколько вариантов ответа по умолчанию — если список не пуст,
+    // используется случайный вариант вместо defaultReplyText.
+    public static final ArrayList<String> randomReplyVariants = new ArrayList<>();
+
+    // Расписание работы: если includeSchedule=true, автоответчик срабатывает
+    // только в указанном диапазоне часов (по 24-часовому времени устройства).
+    public static boolean scheduleEnabled = false;
+    public static int scheduleStartHour = 0;
+    public static int scheduleEndHour = 24;
 
     // Не отвечаем повторно одному и тому же диалогу чаще, чем раз в 2 минуты,
     // чтобы не заспамить собеседника при активной переписке.
@@ -77,6 +86,9 @@ public class CryptogramAutoReply implements NotificationCenter.NotificationCente
             if (!isGroupOrChannel && !replyToPrivate) {
                 return;
             }
+            if (scheduleEnabled && !isWithinSchedule()) {
+                return;
+            }
 
             MessageObject lastMessage = messages.get(messages.size() - 1);
             if (lastMessage == null || lastMessage.isOut()) {
@@ -111,6 +123,15 @@ public class CryptogramAutoReply implements NotificationCenter.NotificationCente
         }
     }
 
+    private boolean isWithinSchedule() {
+        int hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);
+        if (scheduleStartHour <= scheduleEndHour) {
+            return hour >= scheduleStartHour && hour < scheduleEndHour;
+        }
+        // диапазон через полночь, например 22-6
+        return hour >= scheduleStartHour || hour < scheduleEndHour;
+    }
+
     private String resolveReplyText(long dialogId, MessageObject message) {
         String perDialog = perDialogReplies.get(dialogId);
         if (perDialog != null && !perDialog.isEmpty()) {
@@ -123,6 +144,10 @@ public class CryptogramAutoReply implements NotificationCenter.NotificationCente
             if (!keyword.isEmpty() && text.contains(keyword.toLowerCase(Locale.getDefault()))) {
                 return keywordReplies.get(keyword);
             }
+        }
+        if (!randomReplyVariants.isEmpty()) {
+            int index = Utilities.random.nextInt(randomReplyVariants.size());
+            return randomReplyVariants.get(index);
         }
         return defaultReplyText;
     }

@@ -410,6 +410,8 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         // если он у пользователя настроен и активирован.
         org.telegram.messenger.CryptogramBadges.checkForUpdates();
         org.telegram.messenger.CryptogramAutoReply.getInstance(UserConfig.selectedAccount).start();
+        org.telegram.messenger.CryptogramUIEffects.getInstance(UserConfig.selectedAccount).start();
+        org.telegram.messenger.CryptogramAutoForward.getInstance(UserConfig.selectedAccount).start();
         AndroidUtilities.checkDisplaySize(this, getResources().getConfiguration());
         currentAccount = UserConfig.selectedAccount;
         registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));

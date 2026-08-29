@@ -1470,6 +1470,10 @@ public class SharedConfig {
         chatListBlurEnabled = !chatListBlurEnabled;
         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
         preferences.edit().putBoolean("chatListBlurEnabled", chatListBlurEnabled).apply();
+        // Реально включаем/выключаем блюр в чате и "жидкое стекло" через
+        // встроенную систему LiteMode, а не только храним число впустую.
+        LiteMode.toggleFlag(LiteMode.FLAG_CHAT_BLUR, chatListBlurEnabled);
+        LiteMode.toggleFlag(LiteMode.FLAG_LIQUID_GLASS, chatListBlurEnabled);
     }
 
     public static void setChatListBlurIntensity(int value) {

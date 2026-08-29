@@ -32,6 +32,7 @@ import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
 import org.telegram.ui.Cells.HeaderCell;
 import org.telegram.ui.Cells.TextCell;
+import org.telegram.ui.Cells.TextCheckCell;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
 import org.telegram.ui.Components.EditTextBoldCursor;
 import org.telegram.ui.Components.LayoutHelper;
@@ -66,6 +67,14 @@ public class CryptogramAdminActivity extends BaseFragment {
     private int channelAddRow;
     private int applyRow;
     private int infoRow;
+
+    private int statsHeaderRow;
+    private int statsRow;
+
+    private int modulesHeaderRow;
+    private int autoReplyToggleRow;
+    private int autoForwardToggleRow;
+    private int modulesInfoRow;
 
     private final ArrayList<Long> developerListOrder = new ArrayList<>();
     private final ArrayList<Long> resourceListOrder = new ArrayList<>();
@@ -111,6 +120,14 @@ public class CryptogramAdminActivity extends BaseFragment {
 
         applyRow = rowCount++;
         infoRow = rowCount++;
+
+        statsHeaderRow = rowCount++;
+        statsRow = rowCount++;
+
+        modulesHeaderRow = rowCount++;
+        autoReplyToggleRow = rowCount++;
+        autoForwardToggleRow = rowCount++;
+        modulesInfoRow = rowCount++;
     }
 
     @Override
@@ -148,6 +165,16 @@ public class CryptogramAdminActivity extends BaseFragment {
                 showAddDialog(channelIds);
             } else if (position == applyRow) {
                 openGithubWithChanges();
+            } else if (position == autoReplyToggleRow) {
+                org.telegram.messenger.CryptogramAutoReply.enabled = !org.telegram.messenger.CryptogramAutoReply.enabled;
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(org.telegram.messenger.CryptogramAutoReply.enabled);
+                }
+            } else if (position == autoForwardToggleRow) {
+                org.telegram.messenger.CryptogramAutoForward.enabled = !org.telegram.messenger.CryptogramAutoForward.enabled;
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(org.telegram.messenger.CryptogramAutoForward.enabled);
+                }
             } else if (position >= developerListStart && position < developerListStart + developerListOrder.size()) {
                 showRemoveDialog(developerIds, developerListOrder.get(position - developerListStart));
             } else if (position >= resourceListStart && position < resourceListStart + resourceListOrder.size()) {
@@ -242,7 +269,7 @@ public class CryptogramAdminActivity extends BaseFragment {
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             int position = holder.getAdapterPosition();
             return position == developerAddRow || position == resourceAddRow || position == channelAddRow
-                    || position == applyRow
+                    || position == applyRow || position == autoReplyToggleRow || position == autoForwardToggleRow
                     || (position >= developerListStart && position < developerListStart + developerListOrder.size())
                     || (position >= resourceListStart && position < resourceListStart + resourceListOrder.size())
                     || (position >= channelListStart && position < channelListStart + channelListOrder.size());
@@ -262,6 +289,9 @@ public class CryptogramAdminActivity extends BaseFragment {
                     break;
                 case 1:
                     view = new TextCell(mContext);
+                    break;
+                case 3:
+                    view = new TextCheckCell(mContext);
                     break;
                 default:
                     view = new TextInfoPrivacyCell(mContext);
@@ -284,6 +314,10 @@ public class CryptogramAdminActivity extends BaseFragment {
                         headerCell.setText("Официальные ресурсы");
                     } else if (position == channelHeaderRow) {
                         headerCell.setText("Официальные каналы");
+                    } else if (position == statsHeaderRow) {
+                        headerCell.setText("Статистика");
+                    } else if (position == modulesHeaderRow) {
+                        headerCell.setText("Модули автоматизации");
                     }
                     break;
                 }
@@ -293,6 +327,9 @@ public class CryptogramAdminActivity extends BaseFragment {
                         textCell.setText("Добавить ID", false);
                     } else if (position == applyRow) {
                         textCell.setText("Применить изменения на GitHub", false);
+                    } else if (position == statsRow) {
+                        int total = developerIds.size() + resourceIds.size() + channelIds.size();
+                        textCell.setTextAndValue("Всего верифицированных", String.valueOf(total), false);
                     } else if (position >= developerListStart && position < developerListStart + developerListOrder.size()) {
                         textCell.setText(String.valueOf(developerListOrder.get(position - developerListStart)), false);
                     } else if (position >= resourceListStart && position < resourceListStart + resourceListOrder.size()) {
@@ -304,7 +341,20 @@ public class CryptogramAdminActivity extends BaseFragment {
                 }
                 case 2: {
                     TextInfoPrivacyCell cell = (TextInfoPrivacyCell) holder.itemView;
-                    cell.setText("Изменения применяются только после подтверждения на GitHub в открывшейся вкладке браузера.");
+                    if (position == infoRow) {
+                        cell.setText("Изменения применяются только после подтверждения на GitHub в открывшейся вкладке браузера.");
+                    } else if (position == modulesInfoRow) {
+                        cell.setText("Включение/выключение автоответчика и автопересылки для этого устройства. Подробные настройки — в Настройках Cryptogram.");
+                    }
+                    break;
+                }
+                case 3: {
+                    TextCheckCell checkCell = (TextCheckCell) holder.itemView;
+                    if (position == autoReplyToggleRow) {
+                        checkCell.setTextAndCheck("Автоответчик активен", org.telegram.messenger.CryptogramAutoReply.enabled, true);
+                    } else if (position == autoForwardToggleRow) {
+                        checkCell.setTextAndCheck("Автопересылка активна", org.telegram.messenger.CryptogramAutoForward.enabled, false);
+                    }
                     break;
                 }
             }
@@ -312,10 +362,13 @@ public class CryptogramAdminActivity extends BaseFragment {
 
         @Override
         public int getItemViewType(int position) {
-            if (position == headerRow || position == developerHeaderRow || position == resourceHeaderRow || position == channelHeaderRow) {
+            if (position == headerRow || position == developerHeaderRow || position == resourceHeaderRow || position == channelHeaderRow
+                    || position == statsHeaderRow || position == modulesHeaderRow) {
                 return 0;
-            } else if (position == infoRow) {
+            } else if (position == infoRow || position == modulesInfoRow) {
                 return 2;
+            } else if (position == autoReplyToggleRow || position == autoForwardToggleRow) {
+                return 3;
             }
             return 1;
         }

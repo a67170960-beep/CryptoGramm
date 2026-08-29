@@ -4377,6 +4377,25 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     showPremiumBlockedToast(view, ((DialogCell) view).getDialogId());
                     return;
                 }
+                if (view instanceof DialogCell) {
+                    long clickedDialogId = ((DialogCell) view).getDialogId();
+                    org.telegram.messenger.CryptogramBadges.BadgeType badge = org.telegram.messenger.CryptogramBadges.getBadge(clickedDialogId);
+                    if (badge != org.telegram.messenger.CryptogramBadges.BadgeType.NONE) {
+                        String label;
+                        switch (badge) {
+                            case DEVELOPER:
+                                label = "Официальный разработчик Cryptogram";
+                                break;
+                            case OFFICIAL_CHANNEL:
+                                label = "Официальный канал Cryptogram";
+                                break;
+                            default:
+                                label = "Официальный ресурс Cryptogram";
+                                break;
+                        }
+                        BulletinFactory.of(this).createSimpleBulletin(R.raw.chats_infotip, label).show();
+                    }
+                }
                 if (clickSelectsDialog()) {
                     onItemLongClick(viewPage.listView, view, position, 0, 0, viewPage.dialogsType, viewPage.dialogsAdapter);
                     return;
