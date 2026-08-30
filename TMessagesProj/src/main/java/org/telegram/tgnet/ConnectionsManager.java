@@ -402,8 +402,8 @@ public class ConnectionsManager extends BaseController {
                 return;
             }
 
-            if (SharedConfig.ghostMode && object instanceof TLRPC.TL_account_updateStatus) {
-                ((TLRPC.TL_account_updateStatus) object).offline = true;
+            if (SharedConfig.ghostMode && object instanceof org.telegram.tgnet.tl.TL_account.updateStatus) {
+                ((org.telegram.tgnet.tl.TL_account.updateStatus) object).offline = true;
             }
 
             if (SharedConfig.ghostModeReadStatus &&
