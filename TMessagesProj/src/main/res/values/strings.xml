@@ -3554,7 +3554,7 @@
     <string name="CryptogramGhostModeTyping">Hide typing and actions</string>
     <string name="CryptogramGhostModeTypingInfo">Hides that you are typing a message, recording a voice message or a video circle, choosing a sticker, or uploading a photo/video. Works against any Cryptogram client, including the official one.</string>
     <string name="CryptogramGhostModeReadStatus">Hide read status</string>
-    <string name="CryptogramGhostModeReadStatusInfo">Reserved for a future update: will let you read messages without sending a read receipt.</string>
+    <string name="CryptogramGhostModeReadStatusInfo">Lets you read messages without sending a read receipt to the other person — blocked at the network level.</string>
     <string name="CryptogramDisableReadReceiptsInGroups">Disable read receipts in groups</string>
     <string name="CryptogramDisableReadReceiptsInGroupsInfo">Stops confirming to groups and channels that you have read their messages. Your own unread counter still clears normally.</string>
 

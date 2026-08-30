@@ -15,7 +15,7 @@
     <string name="CryptogramGhostModeTyping">Скрывать набор текста и действия</string>
     <string name="CryptogramGhostModeTypingInfo">Скрывает, что вы печатаете сообщение, записываете голосовое или кружок, выбираете стикер или загружаете фото/видео. Работает против любого клиента Telegram, включая официальный.</string>
     <string name="CryptogramGhostModeReadStatus">Скрывать статус прочтения</string>
-    <string name="CryptogramGhostModeReadStatusInfo">Зарезервировано для будущего обновления: позволит читать сообщения без отправки отметки о прочтении.</string>
+    <string name="CryptogramGhostModeReadStatusInfo">Позволяет читать сообщения без отправки отметки о прочтении собеседнику — работает на уровне сети, отправка запроса блокируется полностью.</string>
     <string name="CryptogramDisableReadReceiptsInGroups">Отключить отметки о прочтении в группах</string>
     <string name="CryptogramDisableReadReceiptsInGroupsInfo">Перестаёт подтверждать группам и каналам, что вы прочитали их сообщения. Ваш собственный счётчик непрочитанных при этом обнуляется как обычно.</string>
 

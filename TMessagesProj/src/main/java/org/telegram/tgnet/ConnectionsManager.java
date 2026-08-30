@@ -391,6 +391,42 @@ public class ConnectionsManager extends BaseController {
         if (BuildVars.LOGS_ENABLED) {
             FileLog.d("send request " + object + " with token = " + requestToken);
         }
+
+        // --- Cryptogram Ghost Mode: перехватываем на самом низком, сетевом
+        // уровне — здесь проходят абсолютно все запросы к серверу Telegram,
+        // поэтому это надёжнее, чем блокировать в отдельных высокоуровневых
+        // местах кода (там легко упустить какой-то путь отправки).
+        {
+            if (SharedConfig.ghostModeTyping &&
+                    (object instanceof TLRPC.TL_messages_setTyping || object instanceof TLRPC.TL_messages_setEncryptedTyping)) {
+                return;
+            }
+
+            if (SharedConfig.ghostMode && object instanceof TLRPC.TL_account_updateStatus) {
+                ((TLRPC.TL_account_updateStatus) object).offline = true;
+            }
+
+            if (SharedConfig.ghostModeReadStatus &&
+                    (object instanceof TLRPC.TL_messages_readHistory
+                            || object instanceof TLRPC.TL_messages_readEncryptedHistory
+                            || object instanceof TLRPC.TL_messages_readDiscussion
+                            || object instanceof TLRPC.TL_messages_readMessageContents
+                            || object instanceof TLRPC.TL_channels_readHistory
+                            || object instanceof TLRPC.TL_channels_readMessageContents)) {
+                TLRPC.TL_messages_affectedMessages fakeRes = new TLRPC.TL_messages_affectedMessages();
+                fakeRes.pts = -1;
+                fakeRes.pts_count = 0;
+                try {
+                    if (onComplete != null) {
+                        onComplete.run(fakeRes, null);
+                    }
+                } catch (Exception e) {
+                    FileLog.e(e);
+                }
+                return;
+            }
+        }
+
         try {
             NativeByteBuffer buffer = new NativeByteBuffer(object.getObjectSize());
             object.serializeToStream(buffer);

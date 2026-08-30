@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.messenger.CryptogramBadges;
 import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.browser.Browser;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
@@ -63,7 +64,14 @@ public class CryptogramSettingsActivity extends BaseFragment {
     private int sectionsHeaderRow;
     private int uiSettingsRow;
     private int autoReplyRow;
+    private int clockNameRow;
     private int readAllRow;
+
+    private int aboutHeaderRow;
+    private int aboutDeveloperRow;
+    private int aboutChannelRow;
+    private int aboutReleasesRow;
+    private int aboutInfoRow;
 
     private int adminHeaderRow;
     private int adminRow;
@@ -91,7 +99,14 @@ public class CryptogramSettingsActivity extends BaseFragment {
         sectionsHeaderRow = rowCount++;
         uiSettingsRow = rowCount++;
         autoReplyRow = rowCount++;
+        clockNameRow = rowCount++;
         readAllRow = rowCount++;
+
+        aboutHeaderRow = rowCount++;
+        aboutDeveloperRow = rowCount++;
+        aboutChannelRow = rowCount++;
+        aboutReleasesRow = rowCount++;
+        aboutInfoRow = rowCount++;
 
         if (CryptogramBadges.isAdmin(UserConfig.getInstance(currentAccount).clientUserId)) {
             adminHeaderRow = rowCount++;
@@ -189,8 +204,16 @@ public class CryptogramSettingsActivity extends BaseFragment {
                 presentFragment(new CryptogramUISettingsActivity());
             } else if (position == autoReplyRow) {
                 presentFragment(new CryptogramAutoReplyActivity());
+            } else if (position == clockNameRow) {
+                presentFragment(new CryptogramClockNameActivity());
             } else if (position == readAllRow) {
                 showReadAllDialog();
+            } else if (position == aboutDeveloperRow) {
+                Browser.openUrl(getParentActivity(), "https://t.me/crypto5312");
+            } else if (position == aboutChannelRow) {
+                Browser.openUrl(getParentActivity(), "https://t.me/Cryptogram_offcial");
+            } else if (position == aboutReleasesRow) {
+                Browser.openUrl(getParentActivity(), "https://t.me/Cryptogram_Releases");
             } else if (position == adminRow) {
                 presentFragment(new CryptogramAdminActivity());
             }
@@ -270,7 +293,8 @@ public class CryptogramSettingsActivity extends BaseFragment {
             return position == ghostModeRow || position == ghostModeTypingRow || position == ghostModeReadStatusRow || position == groupReadReceiptsRow
                     || position == disableAutoplayVideoRow || position == disableAutoSaveMediaRow || position == hideLastSeenDateRow
                     || position == disableLinkPreviewGenerationRow || position == compactChatListRow
-                    || position == uiSettingsRow || position == autoReplyRow || position == readAllRow
+                    || position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == readAllRow
+                    || position == aboutDeveloperRow || position == aboutChannelRow || position == aboutReleasesRow
                     || position == adminRow;
         }
 
@@ -314,6 +338,8 @@ public class CryptogramSettingsActivity extends BaseFragment {
                         headerCell.setText("Дополнительно");
                     } else if (position == sectionsHeaderRow) {
                         headerCell.setText("Разделы");
+                    } else if (position == aboutHeaderRow) {
+                        headerCell.setText("О Cryptogram");
                     } else if (position == adminHeaderRow) {
                         headerCell.setText("Администрирование");
                     }
@@ -354,6 +380,8 @@ public class CryptogramSettingsActivity extends BaseFragment {
                         cell.setText(LocaleController.getString(R.string.CryptogramDisableReadReceiptsInGroupsInfo));
                     } else if (position == extraInfoRow) {
                         cell.setText("Дополнительные функции Cryptogram, не связанные с Режимом Призрака.");
+                    } else if (position == aboutInfoRow) {
+                        cell.setText("Официальные ресурсы форка Cryptogram. Подписывайтесь на канал с релизами, чтобы не пропустить новые версии.");
                     }
                     break;
                 }
@@ -363,8 +391,16 @@ public class CryptogramSettingsActivity extends BaseFragment {
                         textCell.setText("Внешний вид (UI)", true);
                     } else if (position == autoReplyRow) {
                         textCell.setText("Автоответчик", true);
+                    } else if (position == clockNameRow) {
+                        textCell.setText("Время в нике", true);
                     } else if (position == readAllRow) {
                         textCell.setText("Прочитать всё", true);
+                    } else if (position == aboutDeveloperRow) {
+                        textCell.setTextAndValue("Официальный разработчик", "@crypto5312", true);
+                    } else if (position == aboutChannelRow) {
+                        textCell.setTextAndValue("Официальный канал", "@Cryptogram_offcial", true);
+                    } else if (position == aboutReleasesRow) {
+                        textCell.setTextAndValue("Релизы", "@Cryptogram_Releases", true);
                     } else if (position == adminRow) {
                         textCell.setText("Панель администратора", false);
                     }
@@ -375,16 +411,18 @@ public class CryptogramSettingsActivity extends BaseFragment {
 
         @Override
         public int getItemViewType(int position) {
-            if (position == ghostModeHeaderRow || position == extraHeaderRow || position == sectionsHeaderRow || position == adminHeaderRow) {
+            if (position == ghostModeHeaderRow || position == extraHeaderRow || position == sectionsHeaderRow || position == aboutHeaderRow || position == adminHeaderRow) {
                 return 0;
             } else if (position == ghostModeRow || position == ghostModeTypingRow || position == ghostModeReadStatusRow || position == groupReadReceiptsRow
                     || position == disableAutoplayVideoRow || position == disableAutoSaveMediaRow || position == hideLastSeenDateRow
                     || position == disableLinkPreviewGenerationRow || position == compactChatListRow) {
                 return 1;
             } else if (position == ghostModeInfoRow || position == ghostModeTypingInfoRow || position == ghostModeReadStatusInfoRow
-                    || position == groupReadReceiptsInfoRow || position == extraInfoRow) {
+                    || position == groupReadReceiptsInfoRow || position == extraInfoRow || position == aboutInfoRow) {
                 return 2;
-            } else if (position == uiSettingsRow || position == autoReplyRow || position == readAllRow || position == adminRow) {
+            } else if (position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == readAllRow
+                    || position == aboutDeveloperRow || position == aboutChannelRow || position == aboutReleasesRow
+                    || position == adminRow) {
                 return 3;
             }
             return 4;
