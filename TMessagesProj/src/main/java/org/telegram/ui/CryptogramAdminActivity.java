@@ -76,6 +76,11 @@ public class CryptogramAdminActivity extends BaseFragment {
     private int autoForwardToggleRow;
     private int modulesInfoRow;
 
+    private int toolsHeaderRow;
+    private int forceUpdateRow;
+    private int deletedMessagesStatsRow;
+    private int toolsInfoRow;
+
     private final ArrayList<Long> developerListOrder = new ArrayList<>();
     private final ArrayList<Long> resourceListOrder = new ArrayList<>();
     private final ArrayList<Long> channelListOrder = new ArrayList<>();
@@ -128,6 +133,11 @@ public class CryptogramAdminActivity extends BaseFragment {
         autoReplyToggleRow = rowCount++;
         autoForwardToggleRow = rowCount++;
         modulesInfoRow = rowCount++;
+
+        toolsHeaderRow = rowCount++;
+        forceUpdateRow = rowCount++;
+        deletedMessagesStatsRow = rowCount++;
+        toolsInfoRow = rowCount++;
     }
 
     @Override
@@ -174,6 +184,11 @@ public class CryptogramAdminActivity extends BaseFragment {
                 org.telegram.messenger.CryptogramAutoForward.enabled = !org.telegram.messenger.CryptogramAutoForward.enabled;
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(org.telegram.messenger.CryptogramAutoForward.enabled);
+                }
+            } else if (position == forceUpdateRow) {
+                org.telegram.messenger.CryptogramBadges.forceUpdateNow();
+                if (getParentActivity() != null) {
+                    org.telegram.ui.Components.BulletinFactory.of(this).createSimpleBulletin(R.raw.chats_infotip, "Список верификации обновляется...").show();
                 }
             } else if (position >= developerListStart && position < developerListStart + developerListOrder.size()) {
                 showRemoveDialog(developerIds, developerListOrder.get(position - developerListStart));
@@ -270,6 +285,7 @@ public class CryptogramAdminActivity extends BaseFragment {
             int position = holder.getAdapterPosition();
             return position == developerAddRow || position == resourceAddRow || position == channelAddRow
                     || position == applyRow || position == autoReplyToggleRow || position == autoForwardToggleRow
+                    || position == forceUpdateRow
                     || (position >= developerListStart && position < developerListStart + developerListOrder.size())
                     || (position >= resourceListStart && position < resourceListStart + resourceListOrder.size())
                     || (position >= channelListStart && position < channelListStart + channelListOrder.size());
@@ -318,6 +334,8 @@ public class CryptogramAdminActivity extends BaseFragment {
                         headerCell.setText("Статистика");
                     } else if (position == modulesHeaderRow) {
                         headerCell.setText("Модули автоматизации");
+                    } else if (position == toolsHeaderRow) {
+                        headerCell.setText("Инструменты");
                     }
                     break;
                 }
@@ -336,6 +354,14 @@ public class CryptogramAdminActivity extends BaseFragment {
                         textCell.setText(String.valueOf(resourceListOrder.get(position - resourceListStart)), false);
                     } else if (position >= channelListStart && position < channelListStart + channelListOrder.size()) {
                         textCell.setText(String.valueOf(channelListOrder.get(position - channelListStart)), false);
+                    } else if (position == forceUpdateRow) {
+                        textCell.setText("Обновить список верификации сейчас", true);
+                    } else if (position == deletedMessagesStatsRow) {
+                        long bytes = org.telegram.messenger.CryptogramDeletedMessages.getLogSizeBytes();
+                        String sizeText = bytes < 1024 * 1024
+                                ? String.format(java.util.Locale.getDefault(), "%.1f КБ", bytes / 1024f)
+                                : String.format(java.util.Locale.getDefault(), "%.2f МБ", bytes / (1024f * 1024f));
+                        textCell.setTextAndValue("Размер журнала удалённых сообщений", sizeText, false);
                     }
                     break;
                 }
@@ -345,6 +371,8 @@ public class CryptogramAdminActivity extends BaseFragment {
                         cell.setText("Изменения применяются только после подтверждения на GitHub в открывшейся вкладке браузера.");
                     } else if (position == modulesInfoRow) {
                         cell.setText("Включение/выключение автоответчика и автопересылки для этого устройства. Подробные настройки — в Настройках Cryptogram.");
+                    } else if (position == toolsInfoRow) {
+                        cell.setText("Список верификации обычно обновляется раз в час автоматически — эта кнопка форсирует проверку немедленно.");
                     }
                     break;
                 }
@@ -363,9 +391,9 @@ public class CryptogramAdminActivity extends BaseFragment {
         @Override
         public int getItemViewType(int position) {
             if (position == headerRow || position == developerHeaderRow || position == resourceHeaderRow || position == channelHeaderRow
-                    || position == statsHeaderRow || position == modulesHeaderRow) {
+                    || position == statsHeaderRow || position == modulesHeaderRow || position == toolsHeaderRow) {
                 return 0;
-            } else if (position == infoRow || position == modulesInfoRow) {
+            } else if (position == infoRow || position == modulesInfoRow || position == toolsInfoRow) {
                 return 2;
             } else if (position == autoReplyToggleRow || position == autoForwardToggleRow) {
                 return 3;

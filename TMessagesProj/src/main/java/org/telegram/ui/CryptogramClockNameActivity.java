@@ -44,8 +44,6 @@ public class CryptogramClockNameActivity extends BaseFragment {
     private RecyclerListView listView;
     private ListAdapter listAdapter;
 
-    // Часовые пояса на выбор — основные страны/города СНГ и популярные мировые.
-    // ID должны быть валидными идентификаторами java.util.TimeZone.
     private static final LinkedHashMap<String, String> TIMEZONES = new LinkedHashMap<>();
     static {
         TIMEZONES.put("Europe/Moscow", "Москва (UTC+3)");
@@ -72,11 +70,14 @@ public class CryptogramClockNameActivity extends BaseFragment {
     private int enabledRow;
     private int infoRow;
 
-    private int positionHeaderRow;
-    private int positionPrefixRow;
-    private int positionSuffixRow;
-    private int positionLastNameRow;
-    private int positionInfoRow;
+    private int templateHeaderRow;
+    private int templateRow;
+    private int templateInfoRow;
+
+    private int fieldHeaderRow;
+    private int fieldFirstNameRow;
+    private int fieldLastNameRow;
+    private int fieldInfoRow;
 
     private int timezoneHeaderRow;
     private int timezoneRow;
@@ -90,11 +91,14 @@ public class CryptogramClockNameActivity extends BaseFragment {
         enabledRow = rowCount++;
         infoRow = rowCount++;
 
-        positionHeaderRow = rowCount++;
-        positionPrefixRow = rowCount++;
-        positionSuffixRow = rowCount++;
-        positionLastNameRow = rowCount++;
-        positionInfoRow = rowCount++;
+        templateHeaderRow = rowCount++;
+        templateRow = rowCount++;
+        templateInfoRow = rowCount++;
+
+        fieldHeaderRow = rowCount++;
+        fieldFirstNameRow = rowCount++;
+        fieldLastNameRow = rowCount++;
+        fieldInfoRow = rowCount++;
 
         timezoneHeaderRow = rowCount++;
         timezoneRow = rowCount++;
@@ -150,15 +154,14 @@ public class CryptogramClockNameActivity extends BaseFragment {
                     CryptogramClockName.stop();
                     CryptogramClockName.restoreOriginalName();
                 }
-            } else if (position == positionPrefixRow) {
-                CryptogramClockName.position = CryptogramClockName.Position.FIRST_NAME_PREFIX;
-                listAdapter.notifyItemRangeChanged(positionPrefixRow, 3);
-            } else if (position == positionSuffixRow) {
-                CryptogramClockName.position = CryptogramClockName.Position.FIRST_NAME_SUFFIX;
-                listAdapter.notifyItemRangeChanged(positionPrefixRow, 3);
-            } else if (position == positionLastNameRow) {
-                CryptogramClockName.position = CryptogramClockName.Position.LAST_NAME_REPLACE;
-                listAdapter.notifyItemRangeChanged(positionPrefixRow, 3);
+            } else if (position == templateRow) {
+                showTemplateDialog();
+            } else if (position == fieldFirstNameRow) {
+                CryptogramClockName.targetField = CryptogramClockName.TargetField.FIRST_NAME;
+                listAdapter.notifyItemRangeChanged(fieldFirstNameRow, 2);
+            } else if (position == fieldLastNameRow) {
+                CryptogramClockName.targetField = CryptogramClockName.TargetField.LAST_NAME;
+                listAdapter.notifyItemRangeChanged(fieldFirstNameRow, 2);
             } else if (position == timezoneRow) {
                 showTimezonePicker();
             } else if (position == intervalRow) {
@@ -167,6 +170,34 @@ public class CryptogramClockNameActivity extends BaseFragment {
         });
 
         return fragmentView;
+    }
+
+    private void showTemplateDialog() {
+        Context context = getParentActivity();
+        if (context == null) {
+            return;
+        }
+        EditTextBoldCursor editText = new EditTextBoldCursor(context);
+        editText.setText(CryptogramClockName.template);
+        editText.setHintText("Например: Алина [time] дура");
+        editText.setTextSize(16);
+        editText.setPadding(dp(16), dp(8), dp(16), dp(8));
+        editText.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
+
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.addView(editText, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Текст с местом для времени");
+        builder.setMessage("Используйте " + CryptogramClockName.TIME_TOKEN + " — на это место будет подставлено текущее время. Если не указать — время добавится в конец текста.");
+        builder.setView(layout);
+        builder.setPositiveButton("Сохранить", (dialogInterface, i) -> {
+            CryptogramClockName.template = editText.getText().toString();
+            listAdapter.notifyItemChanged(templateRow);
+        });
+        builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
+        showDialog(builder.create());
     }
 
     private void showTimezonePicker() {
@@ -204,7 +235,7 @@ public class CryptogramClockNameActivity extends BaseFragment {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Интервал обновления (мин.)");
-        builder.setMessage("Слишком частое обновление (каждую минуту) может привести к временной блокировке смены имени сервером Telegram (FLOOD_WAIT). Функция сама подождёт нужное время, если это произойдёт.");
+        builder.setMessage("Слишком частое обновление (каждую минуту) может привести к временной блокировке смены имени сервером Telegram (FLOOD_WAIT). Функция сама подождёт нужное время, если это произойдёт. Работает только пока приложение открыто.");
         builder.setView(layout);
         builder.setPositiveButton("Сохранить", (dialogInterface, i) -> {
             try {
@@ -232,8 +263,8 @@ public class CryptogramClockNameActivity extends BaseFragment {
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             int position = holder.getAdapterPosition();
-            return position == enabledRow || position == positionPrefixRow || position == positionSuffixRow
-                    || position == positionLastNameRow || position == timezoneRow || position == intervalRow;
+            return position == enabledRow || position == templateRow || position == fieldFirstNameRow
+                    || position == fieldLastNameRow || position == timezoneRow || position == intervalRow;
         }
 
         @Override
@@ -270,8 +301,10 @@ public class CryptogramClockNameActivity extends BaseFragment {
             switch (holder.getItemViewType()) {
                 case 0: {
                     HeaderCell headerCell = (HeaderCell) holder.itemView;
-                    if (position == positionHeaderRow) {
-                        headerCell.setText("Куда вставлять время");
+                    if (position == templateHeaderRow) {
+                        headerCell.setText("Текст с местом для времени");
+                    } else if (position == fieldHeaderRow) {
+                        headerCell.setText("Куда вставлять");
                     } else if (position == timezoneHeaderRow) {
                         headerCell.setText("Часовой пояс");
                     } else if (position == intervalHeaderRow) {
@@ -287,9 +320,11 @@ public class CryptogramClockNameActivity extends BaseFragment {
                 case 2: {
                     TextInfoPrivacyCell cell = (TextInfoPrivacyCell) holder.itemView;
                     if (position == infoRow) {
-                        cell.setText("Периодически меняет ваше имя или фамилию, подставляя туда текущее время. Исходное имя сохраняется и восстанавливается при выключении.");
-                    } else if (position == positionInfoRow) {
-                        cell.setText("Выберите, заменять ли фамилию целиком на время, или добавлять время перед/после имени.");
+                        cell.setText("Периодически меняет ваше имя или фамилию, подставляя туда текущее время. Исходное имя сохраняется и восстанавливается при выключении. Работает, только пока приложение открыто.");
+                    } else if (position == templateInfoRow) {
+                        cell.setText("Нажмите, чтобы задать свой текст и место для времени, например: \"Алина [time] дура\".");
+                    } else if (position == fieldInfoRow) {
+                        cell.setText("Выберите, менять ли имя или фамилию — второе поле останется прежним.");
                     } else if (position == intervalInfoRow) {
                         cell.setText("Минимум 1 минута. Слишком частое обновление может временно ограничиваться сервером Telegram.");
                     }
@@ -297,18 +332,18 @@ public class CryptogramClockNameActivity extends BaseFragment {
                 }
                 case 3: {
                     RadioButtonCell radioCell = (RadioButtonCell) holder.itemView;
-                    if (position == positionPrefixRow) {
-                        radioCell.setTextAndValue("Время + Имя", "", true, CryptogramClockName.position == CryptogramClockName.Position.FIRST_NAME_PREFIX);
-                    } else if (position == positionSuffixRow) {
-                        radioCell.setTextAndValue("Имя + Время", "", true, CryptogramClockName.position == CryptogramClockName.Position.FIRST_NAME_SUFFIX);
-                    } else if (position == positionLastNameRow) {
-                        radioCell.setTextAndValue("Заменить фамилию", "", false, CryptogramClockName.position == CryptogramClockName.Position.LAST_NAME_REPLACE);
+                    if (position == fieldFirstNameRow) {
+                        radioCell.setTextAndValue("Имя", "", true, CryptogramClockName.targetField == CryptogramClockName.TargetField.FIRST_NAME);
+                    } else if (position == fieldLastNameRow) {
+                        radioCell.setTextAndValue("Фамилия", "", false, CryptogramClockName.targetField == CryptogramClockName.TargetField.LAST_NAME);
                     }
                     break;
                 }
                 default: {
                     TextCell textCell = (TextCell) holder.itemView;
-                    if (position == timezoneRow) {
+                    if (position == templateRow) {
+                        textCell.setTextAndValue("Текст", CryptogramClockName.template, false);
+                    } else if (position == timezoneRow) {
                         String label = TIMEZONES.containsKey(CryptogramClockName.timeZoneId)
                                 ? TIMEZONES.get(CryptogramClockName.timeZoneId)
                                 : CryptogramClockName.timeZoneId;
@@ -323,13 +358,13 @@ public class CryptogramClockNameActivity extends BaseFragment {
 
         @Override
         public int getItemViewType(int position) {
-            if (position == positionHeaderRow || position == timezoneHeaderRow || position == intervalHeaderRow) {
+            if (position == templateHeaderRow || position == fieldHeaderRow || position == timezoneHeaderRow || position == intervalHeaderRow) {
                 return 0;
             } else if (position == enabledRow) {
                 return 1;
-            } else if (position == infoRow || position == positionInfoRow || position == intervalInfoRow) {
+            } else if (position == infoRow || position == templateInfoRow || position == fieldInfoRow || position == intervalInfoRow) {
                 return 2;
-            } else if (position == positionPrefixRow || position == positionSuffixRow || position == positionLastNameRow) {
+            } else if (position == fieldFirstNameRow || position == fieldLastNameRow) {
                 return 3;
             }
             return 4;

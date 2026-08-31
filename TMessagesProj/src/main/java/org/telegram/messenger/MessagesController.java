@@ -9323,6 +9323,31 @@ public class MessagesController extends BaseController implements NotificationCe
         if ((messages == null || messages.isEmpty()) && taskId == 0) {
             return;
         }
+        // Cryptogram: сохраняем текст сообщений перед их реальным удалением из
+        // локальной базы. Пропускаем запланированные сообщения (их удаление —
+        // обычная часть работы с черновиками, не "настоящее" удаление).
+        if (CryptogramDeletedMessages.enabled && !scheduled && !quickReplies && !welcomeMessages && messages != null) {
+            for (int a = 0, N = messages.size(); a < N; a++) {
+                int msgId = messages.get(a);
+                MessageObject obj = dialogMessagesByIds.get(msgId);
+                TLRPC.Message rawMessage = obj != null ? obj.messageOwner : getMessagesStorage().getMessage(dialogId, msgId);
+                if (rawMessage != null) {
+                    String senderName = "";
+                    if (rawMessage.from_id != null) {
+                        long fromId = MessageObject.getPeerId(rawMessage.from_id);
+                        if (fromId > 0) {
+                            TLRPC.User fromUser = getUser(fromId);
+                            senderName = UserObject.getUserName(fromUser);
+                        } else if (fromId < 0) {
+                            TLRPC.Chat fromChat = getChat(-fromId);
+                            senderName = fromChat != null ? fromChat.title : "";
+                        }
+                    }
+                    boolean isMedia = rawMessage.media != null && !(rawMessage.media instanceof TLRPC.TL_messageMediaEmpty);
+                    CryptogramDeletedMessages.onMessageDeleted(dialogId, msgId, senderName, rawMessage.message, isMedia);
+                }
+            }
+        }
         ArrayList<Integer> toSend = null;
         long channelId;
         if (taskId == 0) {

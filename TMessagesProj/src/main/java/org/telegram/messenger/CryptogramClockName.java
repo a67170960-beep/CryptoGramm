@@ -4,6 +4,10 @@
  * сохраняется отдельно и не теряется — при выключении функции оно
  * восстанавливается.
  *
+ * Работает только пока приложение открыто в памяти (обычный таймер, без
+ * фоновой службы) — при полном закрытии приложения обновление времени
+ * останавливается и возобновится при следующем запуске.
+ *
  * ВАЖНО: слишком частая смена имени может временно попасть под FLOOD_WAIT
  * сервера Telegram (сервер сам сообщает, сколько ждать, если это произойдёт —
  * это нормальная защита от злоупотреблений, а не баг). Сервис аккуратно
@@ -24,15 +28,20 @@ import java.util.TimeZone;
 
 public class CryptogramClockName {
 
-    public enum Position {
-        FIRST_NAME_PREFIX,  // время + пробел + исходное имя
-        FIRST_NAME_SUFFIX,  // исходное имя + пробел + время
-        LAST_NAME_REPLACE   // фамилия целиком заменяется на время
+    // Шаблон свободного текста: место, куда вставляется время, отмечается
+    // токеном [time]. Например "Алина [time] дура" даст "Алина 06:42 дура".
+    // Если токена в шаблоне нет — время просто добавляется в конец.
+    public static final String TIME_TOKEN = "[time]";
+
+    public enum TargetField {
+        FIRST_NAME,
+        LAST_NAME
     }
 
     public static boolean enabled = false;
     public static String timeZoneId = TimeZone.getDefault().getID();
-    public static Position position = Position.LAST_NAME_REPLACE;
+    public static TargetField targetField = TargetField.LAST_NAME;
+    public static String template = TIME_TOKEN;
     public static int intervalMinutes = 1;
     public static String originalFirstName = "";
     public static String originalLastName = "";
@@ -40,14 +49,13 @@ public class CryptogramClockName {
 
     private static final int currentAccount = UserConfig.selectedAccount;
     private static Runnable updateRunnable;
-    private static boolean scheduledAfterFlood;
 
     public static void start() {
         if (!enabled) {
             return;
         }
         captureOriginalNameIfNeeded();
-        scheduleNext(0);
+        scheduleAtNextMinuteBoundary();
     }
 
     public static void stop() {
@@ -75,33 +83,37 @@ public class CryptogramClockName {
         }
     }
 
-    private static void scheduleNext(long delayMs) {
+    // Cryptogram: вместо простого "подождать N минут от текущего момента"
+    // (что со временем накапливает отставание — каждая отправка занимает
+    // какое-то время на сеть) — вычисляем точный момент ближайшей границы
+    // интервала (например, ровно 06:43:00.000) и планируем именно на неё.
+    private static void scheduleAtNextMinuteBoundary() {
         stop();
+        int intervalMs = Math.max(1, intervalMinutes) * 60_000;
+        long now = System.currentTimeMillis();
+        long delay = intervalMs - (now % intervalMs);
         updateRunnable = () -> {
             if (!enabled) {
                 return;
             }
             applyClockToName();
-            scheduleNext(Math.max(1, intervalMinutes) * 60_000L);
+            scheduleAtNextMinuteBoundary();
         };
-        AndroidUtilities.runOnUIThread(updateRunnable, delayMs);
+        AndroidUtilities.runOnUIThread(updateRunnable, delay);
     }
 
     private static void applyClockToName() {
         String time = formatCurrentTime();
+        String textWithTime = template != null && template.contains(TIME_TOKEN)
+                ? template.replace(TIME_TOKEN, time)
+                : (template == null || template.isEmpty() ? time : template + " " + time);
+
         String newFirstName = originalFirstName;
         String newLastName = originalLastName;
-        switch (position) {
-            case FIRST_NAME_PREFIX:
-                newFirstName = (time + " " + originalFirstName).trim();
-                break;
-            case FIRST_NAME_SUFFIX:
-                newFirstName = (originalFirstName + " " + time).trim();
-                break;
-            case LAST_NAME_REPLACE:
-            default:
-                newLastName = time;
-                break;
+        if (targetField == TargetField.FIRST_NAME) {
+            newFirstName = textWithTime;
+        } else {
+            newLastName = textWithTime;
         }
         sendNameUpdate(newFirstName, newLastName);
     }
@@ -131,10 +143,9 @@ public class CryptogramClockName {
                 if (error.text != null && error.text.startsWith("FLOOD_WAIT_")) {
                     try {
                         int seconds = Integer.parseInt(error.text.substring("FLOOD_WAIT_".length()));
-                        scheduledAfterFlood = true;
                         AndroidUtilities.runOnUIThread(() -> {
                             if (enabled) {
-                                scheduleNext(0);
+                                scheduleAtNextMinuteBoundary();
                             }
                         }, (seconds + 1) * 1000L);
                     } catch (NumberFormatException ignored) {

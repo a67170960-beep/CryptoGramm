@@ -90,6 +90,18 @@ public class CryptogramBadges {
             return;
         }
         lastCheckTime = now;
+        performFetch();
+    }
+
+    // Игнорирует часовой лимит и скачивает список немедленно — используется
+    // из админ-панели, когда только что изменили список на GitHub и не хотят
+    // ждать до часа, чтобы увидеть результат у себя же.
+    public static void forceUpdateNow() {
+        lastCheckTime = System.currentTimeMillis();
+        performFetch();
+    }
+
+    private static void performFetch() {
         Utilities.globalQueue.postRunnable(() -> {
             try {
                 URL url = new URL(LIST_URL);

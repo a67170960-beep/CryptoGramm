@@ -11430,21 +11430,6 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 } else {
                     nameTextView[a].setText(newString);
                 }
-                // Cryptogram: показываем бейдж верификации (разработчик/официальный
-                // ресурс/канал) вторым значком справа от имени в профиле — используем
-                // готовый слот rightDrawable2, не занятый настоящей галочкой Telegram.
-                {
-                    org.telegram.messenger.CryptogramBadges.BadgeType cryptogramBadge = org.telegram.messenger.CryptogramBadges.getBadge(dialogId);
-                    if (cryptogramBadge != org.telegram.messenger.CryptogramBadges.BadgeType.NONE) {
-                        android.graphics.drawable.Drawable badgeDrawable = androidx.core.content.ContextCompat.getDrawable(
-                                fragmentView.getContext(), R.drawable.cryptogram_badge);
-                        if (badgeDrawable != null) {
-                            badgeDrawable = badgeDrawable.mutate();
-                            badgeDrawable.setBounds(0, 0, dp(20), dp(20));
-                        }
-                        nameTextView[a].setRightDrawable2(badgeDrawable);
-                    }
-                }
                 if (a == 0 && onlineTextOverride != null) {
                     onlineTextView[a].setText(onlineTextOverride);
                 } else if (a == 0 && copyFromChatActivity) {
@@ -11480,6 +11465,18 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     } else if (getMessagesController().isDialogMuted(dialogId != 0 ? dialogId : userId, topicId)) {
                         nameTextView[a].setRightDrawable2(getThemedDrawable(Theme.key_drawable_muteIconDrawable));
                         nameTextViewRightDrawable2ContentDescription = LocaleController.getString(R.string.NotificationsMuted);
+                    } else if (org.telegram.messenger.CryptogramBadges.getBadge(dialogId) != org.telegram.messenger.CryptogramBadges.BadgeType.NONE) {
+                        // Cryptogram: показываем наш бейдж только если у пользователя
+                        // нет более приоритетного статуса (scam/настоящая верификация/mute) —
+                        // иначе он перезаписывается стандартной логикой выше.
+                        android.graphics.drawable.Drawable badgeDrawable = androidx.core.content.ContextCompat.getDrawable(
+                                fragmentView.getContext(), R.drawable.cryptogram_badge);
+                        if (badgeDrawable != null) {
+                            badgeDrawable = badgeDrawable.mutate();
+                            badgeDrawable.setBounds(0, 0, dp(20), dp(20));
+                        }
+                        nameTextView[a].setRightDrawable2(badgeDrawable);
+                        nameTextViewRightDrawable2ContentDescription = "Официальный аккаунт Cryptogram";
                     } else {
                         nameTextView[a].setRightDrawable2(null);
                         nameTextViewRightDrawable2ContentDescription = null;

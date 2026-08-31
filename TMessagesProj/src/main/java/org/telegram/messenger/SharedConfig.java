@@ -321,6 +321,7 @@ public class SharedConfig {
     public static boolean uiSoundsEnabled = true;
     public static boolean largeAvatarsInChatList = false;
     public static boolean hideNavigationBarLabels = false;
+    public static boolean cryptogramSnowEnabled = false;
     public static boolean saveStreamMedia = true;
     public static boolean pauseMusicOnRecord = false;
     public static boolean pauseMusicOnMedia = false;
@@ -666,6 +667,7 @@ public class SharedConfig {
             uiSoundsEnabled = preferences.getBoolean("uiSoundsEnabled", true);
             largeAvatarsInChatList = preferences.getBoolean("largeAvatarsInChatList", false);
             hideNavigationBarLabels = preferences.getBoolean("hideNavigationBarLabels", false);
+            cryptogramSnowEnabled = preferences.getBoolean("cryptogramSnowEnabled", false);
             suggestStickers = preferences.getInt("suggestStickers", 0);
             suggestAnimatedEmoji = preferences.getBoolean("suggestAnimatedEmoji", true);
             overrideDevicePerformanceClass = preferences.getInt("overrideDevicePerformanceClass", -1);
@@ -1464,6 +1466,7 @@ public class SharedConfig {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("compactChatList", compactChatList);
         editor.apply();
+        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.dialogsNeedReload, true);
     }
 
     public static void toggleChatListBlur() {
@@ -1498,12 +1501,22 @@ public class SharedConfig {
         roundedBubblesEnabled = !roundedBubblesEnabled;
         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
         preferences.edit().putBoolean("roundedBubblesEnabled", roundedBubblesEnabled).apply();
+        // Cryptogram: при выключении сбрасываем на минимальный радиус (острые
+        // углы), при включении — применяем текущую сохранённую степень скругления.
+        bubbleRadius = roundedBubblesEnabled ? Math.round(messageBubbleRoundness / 100f * 17f) : 0;
+        preferences.edit().putInt("bubbleRadius", bubbleRadius).apply();
     }
 
     public static void setMessageBubbleRoundness(int value) {
         messageBubbleRoundness = Math.max(0, Math.min(100, value));
         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
         preferences.edit().putInt("messageBubbleRoundness", messageBubbleRoundness).apply();
+        // Cryptogram: реально применяем к пузырям сообщений через уже существующий
+        // в Telegram механизм bubbleRadius (диапазон 0-17px, см. ThemeActivity).
+        if (roundedBubblesEnabled) {
+            bubbleRadius = Math.round(messageBubbleRoundness / 100f * 17f);
+            preferences.edit().putInt("bubbleRadius", bubbleRadius).apply();
+        }
     }
 
     public static void toggleVibrationOnMessage() {
@@ -1522,12 +1535,22 @@ public class SharedConfig {
         largeAvatarsInChatList = !largeAvatarsInChatList;
         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
         preferences.edit().putBoolean("largeAvatarsInChatList", largeAvatarsInChatList).apply();
+        // Cryptogram: реально применяем через готовый режим трёхстрочного списка
+        // чатов Telegram — он визуально увеличивает аватары и элементы строки.
+        setUseThreeLinesLayout(largeAvatarsInChatList);
     }
 
     public static void toggleHideNavigationBarLabels() {
         hideNavigationBarLabels = !hideNavigationBarLabels;
         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
         preferences.edit().putBoolean("hideNavigationBarLabels", hideNavigationBarLabels).apply();
+    }
+
+    public static void toggleCryptogramSnow() {
+        cryptogramSnowEnabled = !cryptogramSnowEnabled;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit().putBoolean("cryptogramSnowEnabled", cryptogramSnowEnabled).apply();
+        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.dialogsNeedReload, true);
     }
 
     public static void toggleSaveStreamMedia() {

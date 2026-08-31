@@ -65,6 +65,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
     private int uiSettingsRow;
     private int autoReplyRow;
     private int clockNameRow;
+    private int deletedMessagesRow;
     private int readAllRow;
 
     private int aboutHeaderRow;
@@ -100,6 +101,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
         uiSettingsRow = rowCount++;
         autoReplyRow = rowCount++;
         clockNameRow = rowCount++;
+        deletedMessagesRow = rowCount++;
         readAllRow = rowCount++;
 
         aboutHeaderRow = rowCount++;
@@ -206,6 +208,8 @@ public class CryptogramSettingsActivity extends BaseFragment {
                 presentFragment(new CryptogramAutoReplyActivity());
             } else if (position == clockNameRow) {
                 presentFragment(new CryptogramClockNameActivity());
+            } else if (position == deletedMessagesRow) {
+                presentFragment(new CryptogramDeletedMessagesActivity());
             } else if (position == readAllRow) {
                 showReadAllDialog();
             } else if (position == aboutDeveloperRow) {
@@ -293,7 +297,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
             return position == ghostModeRow || position == ghostModeTypingRow || position == ghostModeReadStatusRow || position == groupReadReceiptsRow
                     || position == disableAutoplayVideoRow || position == disableAutoSaveMediaRow || position == hideLastSeenDateRow
                     || position == disableLinkPreviewGenerationRow || position == compactChatListRow
-                    || position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == readAllRow
+                    || position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == deletedMessagesRow || position == readAllRow
                     || position == aboutDeveloperRow || position == aboutChannelRow || position == aboutReleasesRow
                     || position == adminRow;
         }
@@ -388,13 +392,15 @@ public class CryptogramSettingsActivity extends BaseFragment {
                 case 3: {
                     TextCell textCell = (TextCell) holder.itemView;
                     if (position == uiSettingsRow) {
-                        textCell.setText("Внешний вид (UI)", true);
+                        textCell.setTextAndIcon("Внешний вид (UI)", R.drawable.msg_photo_settings, true);
                     } else if (position == autoReplyRow) {
-                        textCell.setText("Автоответчик", true);
+                        textCell.setTextAndIcon("Автоответчик", R.drawable.msg_bots, true);
                     } else if (position == clockNameRow) {
-                        textCell.setText("Время в нике", true);
+                        textCell.setTextAndIcon("Время в нике", R.drawable.msg_calendar2, true);
+                    } else if (position == deletedMessagesRow) {
+                        textCell.setTextAndIcon("Удалённые сообщения", R.drawable.msg_delete_filled, true);
                     } else if (position == readAllRow) {
-                        textCell.setText("Прочитать всё", true);
+                        textCell.setTextAndIcon("Прочитать всё", R.drawable.msg_check_s, true);
                     } else if (position == aboutDeveloperRow) {
                         textCell.setTextAndValue("Официальный разработчик", "@crypto5312", true);
                     } else if (position == aboutChannelRow) {
@@ -402,7 +408,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
                     } else if (position == aboutReleasesRow) {
                         textCell.setTextAndValue("Релизы", "@Cryptogram_Releases", true);
                     } else if (position == adminRow) {
-                        textCell.setText("Панель администратора", false);
+                        textCell.setTextAndIcon("Панель администратора", R.drawable.msg_bot, false);
                     }
                     break;
                 }
@@ -420,7 +426,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
             } else if (position == ghostModeInfoRow || position == ghostModeTypingInfoRow || position == ghostModeReadStatusInfoRow
                     || position == groupReadReceiptsInfoRow || position == extraInfoRow || position == aboutInfoRow) {
                 return 2;
-            } else if (position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == readAllRow
+            } else if (position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == deletedMessagesRow || position == readAllRow
                     || position == aboutDeveloperRow || position == aboutChannelRow || position == aboutReleasesRow
                     || position == adminRow) {
                 return 3;

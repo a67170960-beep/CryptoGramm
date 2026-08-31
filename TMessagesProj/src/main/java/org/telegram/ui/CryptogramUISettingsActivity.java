@@ -57,6 +57,7 @@ public class CryptogramUISettingsActivity extends BaseFragment {
     private int largeAvatarsRow;
     private int hideNavLabelsRow;
     private int compactChatListRow;
+    private int snowEffectRow;
     private int miscInfoRow;
 
     private void updateRows() {
@@ -80,6 +81,7 @@ public class CryptogramUISettingsActivity extends BaseFragment {
         largeAvatarsRow = rowCount++;
         hideNavLabelsRow = rowCount++;
         compactChatListRow = rowCount++;
+        snowEffectRow = rowCount++;
         miscInfoRow = rowCount++;
     }
 
@@ -157,6 +159,11 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(SharedConfig.compactChatList);
                 }
+            } else if (position == snowEffectRow) {
+                SharedConfig.toggleCryptogramSnow();
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(SharedConfig.cryptogramSnowEnabled);
+                }
             }
         });
 
@@ -228,7 +235,7 @@ public class CryptogramUISettingsActivity extends BaseFragment {
             int position = holder.getAdapterPosition();
             return position == blurEnabledRow || position == animEnabledRow || position == roundedBubblesRow
                     || position == vibrationRow || position == uiSoundsRow || position == largeAvatarsRow
-                    || position == hideNavLabelsRow || position == compactChatListRow;
+                    || position == hideNavLabelsRow || position == compactChatListRow || position == snowEffectRow;
         }
 
         @Override
@@ -293,7 +300,9 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                     } else if (position == hideNavLabelsRow) {
                         checkCell.setTextAndCheck("Скрыть подписи нижней панели", SharedConfig.hideNavigationBarLabels, true);
                     } else if (position == compactChatListRow) {
-                        checkCell.setTextAndCheck("Компактный список чатов", SharedConfig.compactChatList, false);
+                        checkCell.setTextAndCheck("Компактный список чатов", SharedConfig.compactChatList, true);
+                    } else if (position == snowEffectRow) {
+                        checkCell.setTextAndCheck("Снег в чате круглый год ❄️", SharedConfig.cryptogramSnowEnabled, false);
                     }
                     break;
                 }
@@ -326,7 +335,7 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                 return 0;
             } else if (position == blurEnabledRow || position == animEnabledRow || position == roundedBubblesRow
                     || position == vibrationRow || position == uiSoundsRow || position == largeAvatarsRow
-                    || position == hideNavLabelsRow || position == compactChatListRow) {
+                    || position == hideNavLabelsRow || position == compactChatListRow || position == snowEffectRow) {
                 return 1;
             } else if (position == blurInfoRow || position == miscInfoRow) {
                 return 2;
