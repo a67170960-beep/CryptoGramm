@@ -51,6 +51,7 @@ public class CryptogramUISettingsActivity extends BaseFragment {
     private int bubbleHeaderRow;
     private int roundedBubblesRow;
     private int bubbleRoundnessRow;
+    private int bubbleTailsRow;
 
     private int checkHeaderRow;
     private int checkShapeRow;
@@ -68,6 +69,8 @@ public class CryptogramUISettingsActivity extends BaseFragment {
     private int hideNavLabelsRow;
     private int compactChatListRow;
     private int snowEffectRow;
+    private int presetRow;
+    private int avatarBorderRow;
     private int miscInfoRow;
 
     private void updateRows() {
@@ -84,6 +87,7 @@ public class CryptogramUISettingsActivity extends BaseFragment {
         bubbleHeaderRow = rowCount++;
         roundedBubblesRow = rowCount++;
         bubbleRoundnessRow = rowCount++;
+        bubbleTailsRow = rowCount++;
 
         checkHeaderRow = rowCount++;
         checkShapeRow = rowCount++;
@@ -101,6 +105,8 @@ public class CryptogramUISettingsActivity extends BaseFragment {
         hideNavLabelsRow = rowCount++;
         compactChatListRow = rowCount++;
         snowEffectRow = rowCount++;
+        presetRow = rowCount++;
+        avatarBorderRow = rowCount++;
         miscInfoRow = rowCount++;
     }
 
@@ -183,6 +189,19 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(SharedConfig.cryptogramSnowEnabled);
                 }
+            } else if (position == bubbleTailsRow) {
+                SharedConfig.toggleBubbleTails();
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(SharedConfig.bubbleTailsEnabled);
+                }
+            } else if (position == avatarBorderRow) {
+                SharedConfig.toggleAvatarBorder();
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(SharedConfig.avatarBorderEnabled);
+                }
+            } else if (position == presetRow) {
+                SharedConfig.cycleCryptogramUiPreset();
+                listAdapter.notifyItemChanged(position);
             } else if (position == checkShapeRow) {
                 SharedConfig.cycleCryptogramCheckShape();
                 listAdapter.notifyItemChanged(position);
@@ -282,7 +301,8 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                     || position == vibrationRow || position == uiSoundsRow || position == largeAvatarsRow
                     || position == hideNavLabelsRow || position == compactChatListRow || position == snowEffectRow
                     || position == checkShapeRow || position == checkColorRow || position == timeFormatRow
-                    || position == timeSecondsRow || position == timeColorRow || position == timeSizeRow;
+                    || position == timeSecondsRow || position == timeColorRow || position == timeSizeRow
+                    || position == bubbleTailsRow || position == avatarBorderRow || position == presetRow;
         }
 
         @Override
@@ -345,6 +365,8 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                         checkCell.setTextAndCheck("Включить анимации интерфейса", SharedConfig.cryptogramAnimationsEnabled, true);
                     } else if (position == roundedBubblesRow) {
                         checkCell.setTextAndCheck("Скруглённые пузыри сообщений", SharedConfig.roundedBubblesEnabled, true);
+                    } else if (position == bubbleTailsRow) {
+                        checkCell.setTextAndCheck("Хвостики пузырей сообщений", SharedConfig.bubbleTailsEnabled, true);
                     } else if (position == vibrationRow) {
                         checkCell.setTextAndCheck("Вибрация при отправке/получении", SharedConfig.vibrationOnMessageEnabled, true);
                     } else if (position == uiSoundsRow) {
@@ -357,6 +379,8 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                         checkCell.setTextAndCheck("Компактный список чатов", SharedConfig.compactChatList, true);
                     } else if (position == snowEffectRow) {
                         checkCell.setTextAndCheck("Снег в чате круглый год ❄️", SharedConfig.cryptogramSnowEnabled, false);
+                    } else if (position == avatarBorderRow) {
+                        checkCell.setTextAndCheck("Рамка вокруг аватаров", SharedConfig.avatarBorderEnabled, true);
                     } else if (position == timeSecondsRow) {
                         checkCell.setTextAndCheck("Показывать секунды во времени", SharedConfig.messageTimeShowSeconds, true);
                     }
@@ -394,6 +418,8 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                         cell.setTextAndValue("Формат времени", getTimeFormatName(), true);
                     } else if (position == timeColorRow) {
                         cell.setTextAndValue("Цвет времени", getColorName(SharedConfig.messageTimeColor), false);
+                    } else if (position == presetRow) {
+                        cell.setTextAndValue("Пресет интерфейса", getPresetName(), false);
                     }
                     break;
                 }
@@ -407,13 +433,14 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                 return 0;
             } else if (position == blurEnabledRow || position == animEnabledRow || position == roundedBubblesRow
                     || position == vibrationRow || position == uiSoundsRow || position == largeAvatarsRow
-                    || position == hideNavLabelsRow || position == compactChatListRow || position == snowEffectRow) {
+                    || position == hideNavLabelsRow || position == compactChatListRow || position == snowEffectRow
+                    || position == bubbleTailsRow || position == avatarBorderRow || position == timeSecondsRow) {
                 return 1;
             } else if (position == blurInfoRow || position == miscInfoRow) {
                 return 2;
             } else if (position == blurIntensityRow || position == animSpeedRow || position == bubbleRoundnessRow) {
                 return 3;
-            } else if (position == checkShapeRow || position == checkColorRow || position == timeFormatRow || position == timeColorRow) {
+            } else if (position == checkShapeRow || position == checkColorRow || position == timeFormatRow || position == timeColorRow || position == presetRow) {
                 return 5;
             } else if (position == timeSizeRow) {
                 return 3;
@@ -443,6 +470,19 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                 return "12 часов";
             default:
                 return "Системный";
+        }
+    }
+
+    private String getPresetName() {
+        switch (SharedConfig.cryptogramUiPreset) {
+            case 1:
+                return "Компактный";
+            case 2:
+                return "Неон";
+            case 3:
+                return "Минималистичный";
+            default:
+                return "Стандартный";
         }
     }
 

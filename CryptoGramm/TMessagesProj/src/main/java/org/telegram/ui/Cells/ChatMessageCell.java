@@ -1,4 +1,5 @@
- = firstLineWidth - dp(35);
+   }
+                        availableTimeWidth = firstLineWidth - dp(35);
                     } else {
                         availableTimeWidth = photoWidth - dp(14);
                     }
@@ -848,7 +849,23 @@
                                 botButton.animatedEmojiDrawable.setColorFilter(new PorterDuffColorFilter(0xFFFFFFFF, PorterDuff.Mode.SRC_IN));
                             } else if (iconRes != 0) {
                                 botButton.iconDrawable = getResources().getDrawable(iconRes);
-                                botButton.iconDrawa      }
+    ) || useTranscribeButton) ? dp(48) : 0);
+        int left = getBackgroundDrawableLeft() - avatarWidth - shareButtonWidth;
+        if (botButtons != null) {
+            int buttonMostLeft = Integer.MAX_VALUE;
+            int addX;
+            final int widthForButtons = getWidthForButtons();
+            if (currentMessageObject != null && currentMessageObject.isOutOwner()) {
+                addX = getMeasuredWidth() - widthForButtons - dp(10);
+            } else {
+                addX = backgroundDrawableLeft + dp(mediaBackground || drawPinnedBottom ? 1 : 7);
+            }
+            for (int i = 0; i < botButtons.size(); ++i) {
+                BotButton btn = botButtons.get(i);
+                buttonMostLeft = Math.max(buttonMostLeft, addX + (int) (btn.x * widthForButtons));
+            }
+            left = Math.min(left, buttonMostLeft);
+        }
         if (starsPriceText != null) {
             left = Math.min(left, (int) (getParentWidth() - starsPriceText.getWidth() - dp(18)) / 2);
         }
@@ -1958,26 +1975,7 @@
                 summaryParticles.draw(canvas, Theme.multAlpha(textColor, 0.66f), summaryAlpha);
                 invalidateOutbounds();
 
-                canvas.restore();
-            }
-        }
-
-        if (currentMessagesGroup != null) {
-            updateCaptionLayout();
-            drawFactCheck(canvas, 1f);
-        }
-        drawFactCheckText(canvas, 1f);
-
-        if (!enterTransitionInProgress) {
-            drawAnimatedEmojis(canvas, 1f);
-        }
-
-        if (currentMessageObject.type == MessageObject.TYPE_ARTICLE) {
-            final RichMessageLayout currentLayout = currentMessageObject.richLayout;
-            final RichMessageLayout outgoingLayout = transitionParams.animateRichLayout
-                ? transitionParams.animateOutRichLayout : null;
-            final int textColorKey = currentMessageObject.isOutOwner() ? Theme.key_chat_messageTextOut : Theme.key_chat_messageTextIn;
-            final ColorFilter emojiColorFilter = getAdaptiveEmojiColorFilter(0, getThemedColor(textCogFrom;
+              ngFrom;
         public boolean animateMonoforumPadding;
         public boolean needsStopClipping;
 

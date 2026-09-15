@@ -1,93 +1,4 @@
-               case 4:
-                    passcodeRetryInMs = 10000;
-                    break;
-                case 5:
-                    passcodeRetryInMs = 15000;
-                    break;
-                case 6:
-                    passcodeRetryInMs = 20000;
-                    break;
-                case 7:
-                    passcodeRetryInMs = 25000;
-                    break;
-                default:
-                    passcodeRetryInMs = 30000;
-                    break;
-            }
-            lastUptimeMillis = SystemClock.elapsedRealtime();
-        }
-        saveConfig();
-    }
-
-    public static boolean isAutoplayVideo() {
-        return LiteMode.isEnabled(LiteMode.FLAG_AUTOPLAY_VIDEOS);
-    }
-
-    public static boolean isAutoplayGifs() {
-        return LiteMode.isEnabled(LiteMode.FLAG_AUTOPLAY_GIFS);
-    }
-
-    public static boolean isPassportConfigLoaded() {
-        return passportConfigMap != null;
-    }
-
-    public static void setPassportConfig(String json, int hash) {
-        passportConfigMap = null;
-        passportConfigJson = json;
-        passportConfigHash = hash;
-        saveConfig();
-        getCountryLangs();
-    }
-
-    public static HashMap<String, String> getCountryLangs() {
-        if (passportConfigMap == null) {
-            passportConfigMap = new HashMap<>();
-            try {
-                JSONObject object = new JSONObject(passportConfigJson);
-                Iterator<String> iter = object.keys();
-                while (iter.hasNext()) {
-                    String key = iter.next();
-                    passportConfigMap.put(key.toUpperCase(), object.getString(key).toUpperCase());
-                }
-            } catch (Throwable e) {
-                FileLog.e(e);
-            }
-        }
-        return passportConfigMap;
-    }
-
-    public static boolean isAppUpdateAvailable() {
-        if (pendingAppUpdate == null || pendingAppUpdate.document == null || !ApplicationLoader.isStandaloneBuild()) {
-            return false;
-        }
-        int currentVersion;
-        try {
-            PackageInfo pInfo = ApplicationLoader.applicationContext.getPackageManager().getPackageInfo(ApplicationLoader.applicationContext.getPackageName(), 0);
-            currentVersion = pInfo.versionCode;
-        } catch (Exception e) {
-            FileLog.e(e);
-            currentVersion = buildVersion();
-        }
-        return pendingAppUpdateBuildVersion == currentVersion;
-    }
-
-    public static boolean setNewAppVersionAvailable(TLRPC.TL_help_appUpdate update) {
-        String updateVersionString = null;
-        int versionCode = 0;
-        try {
-            PackageInfo packageInfo = ApplicationLoader.applicationContext.getPackageManager().getPackageInfo(ApplicationLoader.applicationContext.getPackageName(), 0);
-            versionCode = packageInfo.versionCode;
-            updateVersionString = packageInfo.versionName;
-        } catch (Exception e) {
-            FileLog.e(e);
-        }
-        if (versionCode == 0) {
-            versionCode = buildVersion();
-        }
-        if (updateVersionString == null) {
-            updateVersionString = BuildVars.BUILD_VERSION_STRING;
-        }
-        if (update.version == null || versionBiggerOrEqual(updateVersionString, update.version)) {
+ion)) {
             return false;
         }
         pendingAppUpdate = update;
@@ -791,6 +702,75 @@
         cryptogramSnowEnabled = !cryptogramSnowEnabled;
         SharedPreferences preferences = MessagesController.getGlobalMainSettings();
         preferences.edit().putBoolean("cryptogramSnowEnabled", cryptogramSnowEnabled).apply();
+        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.dialogsNeedReload, true);
+    }
+
+    public static void toggleBubbleTails() {
+        bubbleTailsEnabled = !bubbleTailsEnabled;
+        MessagesController.getGlobalMainSettings().edit().putBoolean("bubbleTailsEnabled", bubbleTailsEnabled).apply();
+        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.updateInterfaces, 0);
+    }
+
+    public static void toggleAvatarBorder() {
+        avatarBorderEnabled = !avatarBorderEnabled;
+        MessagesController.getGlobalMainSettings().edit().putBoolean("avatarBorderEnabled", avatarBorderEnabled).apply();
+        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.updateInterfaces, 0);
+    }
+
+    public static void cycleCryptogramUiPreset() {
+        cryptogramUiPreset = (cryptogramUiPreset + 1) % 4;
+        switch (cryptogramUiPreset) {
+            case 1: // Компактный
+                roundedBubblesEnabled = true;
+                messageBubbleRoundness = 30;
+                compactChatList = true;
+                messageTimeTextSize = 11;
+                cryptogramCheckShape = 3;
+                cryptogramCheckColor = 0;
+                messageTimeColor = 0;
+                break;
+            case 2: // Неон
+                roundedBubblesEnabled = true;
+                messageBubbleRoundness = 90;
+                compactChatList = false;
+                messageTimeTextSize = 13;
+                cryptogramCheckShape = 1;
+                cryptogramCheckColor = 0xff4db6ff;
+                messageTimeColor = 0xff7fceff;
+                break;
+            case 3: // Минималистичный
+                roundedBubblesEnabled = true;
+                messageBubbleRoundness = 55;
+                compactChatList = true;
+                messageTimeTextSize = 10;
+                cryptogramCheckShape = 0;
+                cryptogramCheckColor = 0;
+                messageTimeColor = 0;
+                break;
+            default: // Стандартный
+                roundedBubblesEnabled = true;
+                messageBubbleRoundness = 50;
+                compactChatList = false;
+                messageTimeTextSize = 12;
+                cryptogramCheckShape = 0;
+                cryptogramCheckColor = 0;
+                messageTimeColor = 0;
+                break;
+        }
+        bubbleRadius = roundedBubblesEnabled ? Math.round(messageBubbleRoundness / 100f * 17f) : 0;
+        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+        preferences.edit()
+                .putInt("cryptogramUiPreset", cryptogramUiPreset)
+                .putBoolean("roundedBubblesEnabled", roundedBubblesEnabled)
+                .putInt("messageBubbleRoundness", messageBubbleRoundness)
+                .putInt("bubbleRadius", bubbleRadius)
+                .putBoolean("compactChatList", compactChatList)
+                .putInt("messageTimeTextSize", messageTimeTextSize)
+                .putInt("cryptogramCheckShape", cryptogramCheckShape)
+                .putInt("cryptogramCheckColor", cryptogramCheckColor)
+                .putInt("messageTimeColor", messageTimeColor)
+                .apply();
+        refreshCryptogramMessageAppearance();
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.dialogsNeedReload, true);
     }
 
