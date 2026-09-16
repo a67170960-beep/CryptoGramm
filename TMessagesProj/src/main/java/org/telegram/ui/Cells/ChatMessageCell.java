@@ -18474,6 +18474,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         } else {
             timeString = LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000);
         }
+        String cryptogramTime = SharedConfig.formatCryptogramTime(messageObject.messageOwner.date);
+        if (cryptogramTime != null) {
+            timeString = cryptogramTime;
+        }
         if (currentMessageObject.messageOwner.video_processing_pending) {
             timeString = formatString(R.string.ScheduledTimeApprox, timeString);
         }
@@ -18516,6 +18520,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             } else {
                 currentTimeString = TextUtils.concat(formatString(R.string.MessageScheduledRepeatSeconds, period), ", ", currentTimeString);
             }
+        }
+        Theme.chat_timePaint.setTextSize(AndroidUtilities.dp(SharedConfig.cryptogramTimeTextSize));
+        if (SharedConfig.cryptogramTimeColorEnabled) {
+            Theme.chat_timePaint.setColor(0xFF8B5CF6);
         }
         timeTextWidth = timeWidth = (int) Math.ceil(Theme.chat_timePaint.measureText(currentTimeString, 0, currentTimeString == null ? 0 : currentTimeString.length()));
         if (currentMessageObject.scheduled && currentMessageObject.messageOwner.date == 0x7FFFFFFE || currentMessageObject.notime) {
