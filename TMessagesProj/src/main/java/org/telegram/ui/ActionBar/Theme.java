@@ -8182,12 +8182,20 @@ public class Theme {
             playPauseAnimator.addSvgKeyFrame("M 47.641 17.125 C 50.641 18.207 51.09 19.935 51.078 22.653 C 51.07 24.191 51.062 21.23 51.088 23.063 C 51.109 24.886 49.587 27 47.377 27 L 5 27.009 C 2.79 27.009 1 25.219 1 23.009 L 0.983 11.459 C 0.983 8.908 3.414 7.522 5.476 7.838 C 7.138 8.486 47.641 17.125 47.641 17.125 Z", 300);
             playPauseAnimator.addSvgKeyFrame("M 48 7 C 50.21 7 52 8.79 52 11 C 52 19 52 19 52 19 C 52 21.21 50.21 23 48 23 L 4 23 C 1.79 23 0 21.21 0 19 L 0 11 C 0 8.79 1.79 7 4 7 C 48 7 48 7 48 7 Z", 383);
 
-            chat_msgOutCheckDrawable = resources.getDrawable(R.drawable.msg_check_s).mutate();
-            chat_msgOutCheckSelectedDrawable = resources.getDrawable(R.drawable.msg_check_s).mutate();
-            chat_msgOutCheckReadDrawable = resources.getDrawable(R.drawable.msg_check_s).mutate();
-            chat_msgOutCheckReadSelectedDrawable = resources.getDrawable(R.drawable.msg_check_s).mutate();
-            chat_msgMediaCheckDrawable = resources.getDrawable(R.drawable.msg_check_s).mutate();
-            chat_msgStickerCheckDrawable = resources.getDrawable(R.drawable.msg_check_s).mutate();
+            int cryptogramCheckDrawable = R.drawable.msg_check_s;
+            if (SharedConfig.cryptogramCheckStyle == 1) {
+                cryptogramCheckDrawable = R.drawable.cryptogram_check_circle;
+            } else if (SharedConfig.cryptogramCheckStyle == 2) {
+                cryptogramCheckDrawable = R.drawable.cryptogram_check_diamond;
+            } else if (SharedConfig.cryptogramCheckStyle == 3) {
+                cryptogramCheckDrawable = R.drawable.cryptogram_check_minimal;
+            }
+            chat_msgOutCheckDrawable = resources.getDrawable(cryptogramCheckDrawable).mutate();
+            chat_msgOutCheckSelectedDrawable = resources.getDrawable(cryptogramCheckDrawable).mutate();
+            chat_msgOutCheckReadDrawable = resources.getDrawable(cryptogramCheckDrawable).mutate();
+            chat_msgOutCheckReadSelectedDrawable = resources.getDrawable(cryptogramCheckDrawable).mutate();
+            chat_msgMediaCheckDrawable = resources.getDrawable(cryptogramCheckDrawable).mutate();
+            chat_msgStickerCheckDrawable = resources.getDrawable(cryptogramCheckDrawable).mutate();
             chat_msgOutHalfCheckDrawable = resources.getDrawable(R.drawable.msg_halfcheck).mutate();
             chat_msgOutHalfCheckSelectedDrawable = resources.getDrawable(R.drawable.msg_halfcheck).mutate();
             chat_msgMediaHalfCheckDrawable = resources.getDrawable(R.drawable.msg_halfcheck_s).mutate();
@@ -8399,7 +8407,7 @@ public class Theme {
             chat_adminPaint.setTextSize(dp(smallerDp - 1));
             chat_ephemeralPaint.setTextSize(dp(12));
             float timeDp = 2 * (SharedConfig.fontSize - 16) / 3f + 12;
-            chat_timePaint.setTextSize(dp(12));
+            chat_timePaint.setTextSize(dp(SharedConfig.cryptogramTimeTextSize));
             chat_gamePaint.setTextSize(dp(13));
             chat_shipmentPaint.setTextSize(dp(13));
             chat_instantViewPaint.setTextSize(dp(13));
