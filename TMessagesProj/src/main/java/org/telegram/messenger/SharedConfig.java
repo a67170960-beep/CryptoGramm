@@ -322,6 +322,14 @@ public class SharedConfig {
     public static boolean largeAvatarsInChatList = false;
     public static boolean hideNavigationBarLabels = false;
     public static boolean cryptogramSnowEnabled = false;
+    // Cryptogram: message timestamp and read-check appearance.
+    // 0 = system, 1 = 24-hour, 2 = 12-hour.
+    public static int cryptogramTimeFormat = 0;
+    public static boolean cryptogramTimeShowSeconds = false;
+    public static boolean cryptogramTimeColorEnabled = false;
+    public static int cryptogramTimeTextSize = 12;
+    // 0 = Telegram default, 1 = circle, 2 = diamond, 3 = minimal.
+    public static int cryptogramCheckStyle = 0;
     public static boolean saveStreamMedia = true;
     public static boolean pauseMusicOnRecord = false;
     public static boolean pauseMusicOnMedia = false;
@@ -668,6 +676,11 @@ public class SharedConfig {
             largeAvatarsInChatList = preferences.getBoolean("largeAvatarsInChatList", false);
             hideNavigationBarLabels = preferences.getBoolean("hideNavigationBarLabels", false);
             cryptogramSnowEnabled = preferences.getBoolean("cryptogramSnowEnabled", false);
+            cryptogramTimeFormat = preferences.getInt("cryptogramTimeFormat", 0);
+            cryptogramTimeShowSeconds = preferences.getBoolean("cryptogramTimeShowSeconds", false);
+            cryptogramTimeColorEnabled = preferences.getBoolean("cryptogramTimeColorEnabled", false);
+            cryptogramTimeTextSize = preferences.getInt("cryptogramTimeTextSize", 12);
+            cryptogramCheckStyle = preferences.getInt("cryptogramCheckStyle", 0);
             suggestStickers = preferences.getInt("suggestStickers", 0);
             suggestAnimatedEmoji = preferences.getBoolean("suggestAnimatedEmoji", true);
             overrideDevicePerformanceClass = preferences.getInt("overrideDevicePerformanceClass", -1);
@@ -2089,4 +2102,68 @@ public class SharedConfig {
 
 
 
+
+      public static String getCryptogramTimeFormatName() {
+          if (cryptogramTimeFormat == 1) {
+              return "24 часа";
+          } else if (cryptogramTimeFormat == 2) {
+              return "12 часов";
+          }
+          return "системный";
+      }
+
+      public static void cycleCryptogramTimeFormat() {
+          cryptogramTimeFormat = (cryptogramTimeFormat + 1) % 3;
+          MessagesController.getGlobalMainSettings().edit().putInt("cryptogramTimeFormat", cryptogramTimeFormat).apply();
+      }
+
+      public static void toggleCryptogramTimeSeconds() {
+          cryptogramTimeShowSeconds = !cryptogramTimeShowSeconds;
+          MessagesController.getGlobalMainSettings().edit().putBoolean("cryptogramTimeShowSeconds", cryptogramTimeShowSeconds).apply();
+      }
+
+      public static void toggleCryptogramTimeColor() {
+          cryptogramTimeColorEnabled = !cryptogramTimeColorEnabled;
+          MessagesController.getGlobalMainSettings().edit().putBoolean("cryptogramTimeColorEnabled", cryptogramTimeColorEnabled).apply();
+      }
+
+      public static void setCryptogramTimeTextSize(int value) {
+          cryptogramTimeTextSize = Math.max(10, Math.min(18, value));
+          MessagesController.getGlobalMainSettings().edit().putInt("cryptogramTimeTextSize", cryptogramTimeTextSize).apply();
+      }
+
+      public static String getCryptogramCheckStyleName() {
+          switch (cryptogramCheckStyle) {
+              case 1:
+                  return "круглые";
+              case 2:
+                  return "ромбы";
+              case 3:
+                  return "минимальные";
+              default:
+                  return "стандартные";
+          }
+      }
+
+      public static void cycleCryptogramCheckStyle() {
+          cryptogramCheckStyle = (cryptogramCheckStyle + 1) % 4;
+          MessagesController.getGlobalMainSettings().edit().putInt("cryptogramCheckStyle", cryptogramCheckStyle).apply();
+      }
+
+      public static String formatCryptogramTime(int timestamp) {
+          if (cryptogramTimeFormat == 0 && !cryptogramTimeShowSeconds) {
+              return null;
+          }
+          boolean use24Hour = cryptogramTimeFormat == 1;
+          if (cryptogramTimeFormat == 0) {
+              use24Hour = android.text.format.DateFormat.is24HourFormat(ApplicationLoader.applicationContext);
+          }
+          String pattern;
+          if (use24Hour) {
+              pattern = cryptogramTimeShowSeconds ? "HH:mm:ss" : "HH:mm";
+          } else {
+              pattern = cryptogramTimeShowSeconds ? "hh:mm:ss a" : "hh:mm a";
+          }
+          return new java.text.SimpleDateFormat(pattern, Locale.getDefault()).format(new java.util.Date(timestamp * 1000L));
+      }
 }
