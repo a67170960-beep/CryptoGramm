@@ -22,7 +22,9 @@ import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
 import org.telegram.ui.Cells.HeaderCell;
+import org.telegram.ui.Cells.CryptogramHeroCell;
 import org.telegram.ui.Cells.ShadowSectionCell;
+import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextCheckCell;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
 import org.telegram.ui.Components.LayoutHelper;
@@ -37,6 +39,9 @@ public class CryptogramUISettingsActivity extends BaseFragment {
     private ListAdapter listAdapter;
 
     private int rowCount;
+    private int heroRow;
+    private int presetRow;
+    private int resetRow;
 
     private int blurHeaderRow;
     private int blurEnabledRow;
@@ -67,6 +72,10 @@ public class CryptogramUISettingsActivity extends BaseFragment {
 
     private void updateRows() {
         rowCount = 0;
+        heroRow = rowCount++;
+        presetRow = rowCount++;
+        resetRow = rowCount++;
+
         blurHeaderRow = rowCount++;
         blurEnabledRow = rowCount++;
         blurIntensityRow = rowCount++;
@@ -129,7 +138,15 @@ public class CryptogramUISettingsActivity extends BaseFragment {
         listView.setAdapter(listAdapter);
 
         listView.setOnItemClickListener((view, position) -> {
-            if (position == blurEnabledRow) {
+            if (position == presetRow) {
+                SharedConfig.cycleCryptogramUiPreset();
+                reloadThemeResources();
+                listAdapter.notifyDataSetChanged();
+            } else if (position == resetRow) {
+                SharedConfig.resetCryptogramAppearance();
+                reloadThemeResources();
+                listAdapter.notifyDataSetChanged();
+            } else if (position == blurEnabledRow) {
                 SharedConfig.toggleChatListBlur();
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(SharedConfig.chatListBlurEnabled);
@@ -194,6 +211,9 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                 SharedConfig.cycleCryptogramCheckStyle();
                 reloadThemeResources();
                 listAdapter.notifyItemChanged(position);
+            }
+            if (position != heroRow) {
+                listAdapter.notifyItemChanged(heroRow);
             }
         });
 
@@ -278,7 +298,8 @@ public class CryptogramUISettingsActivity extends BaseFragment {
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             int position = holder.getAdapterPosition();
-            return position == blurEnabledRow || position == animEnabledRow || position == roundedBubblesRow
+            return position == presetRow || position == resetRow
+                    || position == blurEnabledRow || position == animEnabledRow || position == roundedBubblesRow
                     || position == vibrationRow || position == uiSoundsRow || position == largeAvatarsRow
                     || position == hideNavLabelsRow || position == compactChatListRow || position == snowEffectRow
                     || position == timeFormatRow || position == timeSecondsRow || position == timeColorRow
@@ -306,6 +327,12 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                 case 3:
                     view = new SliderCell(mContext);
                     break;
+                case 4:
+                    view = new TextCell(mContext);
+                    break;
+                case 5:
+                    view = new CryptogramHeroCell(mContext, true);
+                    break;
                 default:
                     view = new ShadowSectionCell(mContext);
                     break;
@@ -317,6 +344,10 @@ public class CryptogramUISettingsActivity extends BaseFragment {
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             switch (holder.getItemViewType()) {
+                case 5: {
+                    ((CryptogramHeroCell) holder.itemView).refresh();
+                    break;
+                }
                 case 0: {
                     HeaderCell headerCell = (HeaderCell) holder.itemView;
                     if (position == blurHeaderRow) {
@@ -383,12 +414,25 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                     }
                     break;
                 }
+                case 4: {
+                    TextCell textCell = (TextCell) holder.itemView;
+                    if (position == presetRow) {
+                        textCell.setTextAndValue("Пресет оформления", SharedConfig.getCryptogramUiPresetName(), true);
+                    } else if (position == resetRow) {
+                        textCell.setTextAndIcon("Сбросить оформление", R.drawable.msg_delete_filled, false);
+                    }
+                    break;
+                }
             }
         }
 
         @Override
         public int getItemViewType(int position) {
-            if (position == blurHeaderRow || position == animHeaderRow || position == bubbleHeaderRow || position == miscHeaderRow) {
+            if (position == heroRow) {
+                return 5;
+            } else if (position == presetRow || position == resetRow) {
+                return 4;
+            } else if (position == blurHeaderRow || position == animHeaderRow || position == bubbleHeaderRow || position == miscHeaderRow) {
                 return 0;
             } else if (position == blurEnabledRow || position == animEnabledRow || position == roundedBubblesRow
                     || position == vibrationRow || position == uiSoundsRow || position == largeAvatarsRow

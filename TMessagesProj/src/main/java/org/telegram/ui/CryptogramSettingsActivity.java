@@ -26,6 +26,7 @@ import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
 import org.telegram.ui.Cells.HeaderCell;
+import org.telegram.ui.Cells.CryptogramHeroCell;
 import org.telegram.ui.Cells.ShadowSectionCell;
 import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextCheckCell;
@@ -43,6 +44,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
     private ListAdapter listAdapter;
 
     private int rowCount;
+    private int heroRow;
     private int ghostModeHeaderRow;
     private int ghostModeRow;
     private int ghostModeInfoRow;
@@ -79,6 +81,8 @@ public class CryptogramSettingsActivity extends BaseFragment {
 
     private void updateRows() {
         rowCount = 0;
+        heroRow = rowCount++;
+
         ghostModeHeaderRow = rowCount++;
         ghostModeRow = rowCount++;
         ghostModeInfoRow = rowCount++;
@@ -221,6 +225,9 @@ public class CryptogramSettingsActivity extends BaseFragment {
             } else if (position == adminRow) {
                 presentFragment(new CryptogramAdminActivity());
             }
+            if (position != heroRow) {
+                listAdapter.notifyItemChanged(heroRow);
+            }
         });
 
         return fragmentView;
@@ -311,6 +318,9 @@ public class CryptogramSettingsActivity extends BaseFragment {
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view;
             switch (viewType) {
+                case 5:
+                    view = new CryptogramHeroCell(mContext, false);
+                    break;
                 case 0:
                     view = new HeaderCell(mContext);
                     break;
@@ -334,6 +344,10 @@ public class CryptogramSettingsActivity extends BaseFragment {
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             switch (holder.getItemViewType()) {
+                case 5: {
+                    ((CryptogramHeroCell) holder.itemView).refresh();
+                    break;
+                }
                 case 0: {
                     HeaderCell headerCell = (HeaderCell) holder.itemView;
                     if (position == ghostModeHeaderRow) {
@@ -417,7 +431,9 @@ public class CryptogramSettingsActivity extends BaseFragment {
 
         @Override
         public int getItemViewType(int position) {
-            if (position == ghostModeHeaderRow || position == extraHeaderRow || position == sectionsHeaderRow || position == aboutHeaderRow || position == adminHeaderRow) {
+            if (position == heroRow) {
+                return 5;
+            } else if (position == ghostModeHeaderRow || position == extraHeaderRow || position == sectionsHeaderRow || position == aboutHeaderRow || position == adminHeaderRow) {
                 return 0;
             } else if (position == ghostModeRow || position == ghostModeTypingRow || position == ghostModeReadStatusRow || position == groupReadReceiptsRow
                     || position == disableAutoplayVideoRow || position == disableAutoSaveMediaRow || position == hideLastSeenDateRow

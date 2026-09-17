@@ -330,6 +330,8 @@ public class SharedConfig {
     public static int cryptogramTimeTextSize = 12;
     // 0 = Telegram default, 1 = circle, 2 = diamond, 3 = minimal.
     public static int cryptogramCheckStyle = 0;
+    // Appearance presets: 0 = Glass, 1 = Neon, 2 = Minimal, 3 = Classic.
+    public static int cryptogramUiPreset = 0;
     public static boolean saveStreamMedia = true;
     public static boolean pauseMusicOnRecord = false;
     public static boolean pauseMusicOnMedia = false;
@@ -681,6 +683,7 @@ public class SharedConfig {
             cryptogramTimeColorEnabled = preferences.getBoolean("cryptogramTimeColorEnabled", false);
             cryptogramTimeTextSize = preferences.getInt("cryptogramTimeTextSize", 12);
             cryptogramCheckStyle = preferences.getInt("cryptogramCheckStyle", 0);
+            cryptogramUiPreset = preferences.getInt("cryptogramUiPreset", 0);
             suggestStickers = preferences.getInt("suggestStickers", 0);
             suggestAnimatedEmoji = preferences.getBoolean("suggestAnimatedEmoji", true);
             overrideDevicePerformanceClass = preferences.getInt("overrideDevicePerformanceClass", -1);
@@ -2148,6 +2151,130 @@ public class SharedConfig {
       public static void cycleCryptogramCheckStyle() {
           cryptogramCheckStyle = (cryptogramCheckStyle + 1) % 4;
           MessagesController.getGlobalMainSettings().edit().putInt("cryptogramCheckStyle", cryptogramCheckStyle).apply();
+      }
+
+      public static String getCryptogramUiPresetName() {
+          switch (cryptogramUiPreset) {
+              case 1:
+                  return "Неон";
+              case 2:
+                  return "Минимал";
+              case 3:
+                  return "Классика";
+              default:
+                  return "Glass";
+          }
+      }
+
+      public static void cycleCryptogramUiPreset() {
+          applyCryptogramUiPreset((cryptogramUiPreset + 1) % 4);
+      }
+
+      /**
+       * Applies a complete visual profile in one tap. All values are written
+       * through the same preferences used by the individual controls, so a
+       * preset can always be fine-tuned afterwards.
+       */
+      public static void applyCryptogramUiPreset(int preset) {
+          cryptogramUiPreset = Math.max(0, Math.min(3, preset));
+          switch (cryptogramUiPreset) {
+              case 1: // Neon
+                  chatListBlurEnabled = true;
+                  chatListBlurIntensity = 82;
+                  cryptogramAnimationsEnabled = true;
+                  animationSpeedPercent = 135;
+                  roundedBubblesEnabled = true;
+                  messageBubbleRoundness = 92;
+                  largeAvatarsInChatList = true;
+                  hideNavigationBarLabels = false;
+                  compactChatList = false;
+                  cryptogramTimeFormat = 1;
+                  cryptogramTimeShowSeconds = true;
+                  cryptogramTimeColorEnabled = true;
+                  cryptogramTimeTextSize = 13;
+                  cryptogramCheckStyle = 2;
+                  cryptogramSnowEnabled = true;
+                  break;
+              case 2: // Minimal
+                  chatListBlurEnabled = false;
+                  chatListBlurIntensity = 0;
+                  cryptogramAnimationsEnabled = false;
+                  animationSpeedPercent = 75;
+                  roundedBubblesEnabled = true;
+                  messageBubbleRoundness = 24;
+                  largeAvatarsInChatList = false;
+                  hideNavigationBarLabels = true;
+                  compactChatList = true;
+                  cryptogramTimeFormat = 1;
+                  cryptogramTimeShowSeconds = false;
+                  cryptogramTimeColorEnabled = false;
+                  cryptogramTimeTextSize = 11;
+                  cryptogramCheckStyle = 3;
+                  cryptogramSnowEnabled = false;
+                  break;
+              case 3: // Classic
+                  chatListBlurEnabled = false;
+                  chatListBlurIntensity = 50;
+                  cryptogramAnimationsEnabled = true;
+                  animationSpeedPercent = 100;
+                  roundedBubblesEnabled = true;
+                  messageBubbleRoundness = 50;
+                  largeAvatarsInChatList = false;
+                  hideNavigationBarLabels = false;
+                  compactChatList = false;
+                  cryptogramTimeFormat = 0;
+                  cryptogramTimeShowSeconds = false;
+                  cryptogramTimeColorEnabled = false;
+                  cryptogramTimeTextSize = 12;
+                  cryptogramCheckStyle = 0;
+                  cryptogramSnowEnabled = false;
+                  break;
+              default: // Glass
+                  chatListBlurEnabled = true;
+                  chatListBlurIntensity = 64;
+                  cryptogramAnimationsEnabled = true;
+                  animationSpeedPercent = 110;
+                  roundedBubblesEnabled = true;
+                  messageBubbleRoundness = 76;
+                  largeAvatarsInChatList = true;
+                  hideNavigationBarLabels = false;
+                  compactChatList = false;
+                  cryptogramTimeFormat = 0;
+                  cryptogramTimeShowSeconds = false;
+                  cryptogramTimeColorEnabled = true;
+                  cryptogramTimeTextSize = 12;
+                  cryptogramCheckStyle = 1;
+                  cryptogramSnowEnabled = false;
+                  break;
+          }
+          bubbleRadius = roundedBubblesEnabled ? Math.round(messageBubbleRoundness / 100f * 17f) : 0;
+          SharedPreferences.Editor editor = MessagesController.getGlobalMainSettings().edit();
+          editor.putInt("cryptogramUiPreset", cryptogramUiPreset);
+          editor.putBoolean("chatListBlurEnabled", chatListBlurEnabled);
+          editor.putInt("chatListBlurIntensity", chatListBlurIntensity);
+          editor.putBoolean("cryptogramAnimationsEnabled", cryptogramAnimationsEnabled);
+          editor.putInt("animationSpeedPercent", animationSpeedPercent);
+          editor.putBoolean("roundedBubblesEnabled", roundedBubblesEnabled);
+          editor.putInt("messageBubbleRoundness", messageBubbleRoundness);
+          editor.putInt("bubbleRadius", bubbleRadius);
+          editor.putBoolean("largeAvatarsInChatList", largeAvatarsInChatList);
+          editor.putBoolean("hideNavigationBarLabels", hideNavigationBarLabels);
+          editor.putBoolean("compactChatList", compactChatList);
+          editor.putInt("cryptogramTimeFormat", cryptogramTimeFormat);
+          editor.putBoolean("cryptogramTimeShowSeconds", cryptogramTimeShowSeconds);
+          editor.putBoolean("cryptogramTimeColorEnabled", cryptogramTimeColorEnabled);
+          editor.putInt("cryptogramTimeTextSize", cryptogramTimeTextSize);
+          editor.putInt("cryptogramCheckStyle", cryptogramCheckStyle);
+          editor.putBoolean("cryptogramSnowEnabled", cryptogramSnowEnabled);
+          editor.apply();
+          LiteMode.toggleFlag(LiteMode.FLAG_CHAT_BLUR, chatListBlurEnabled);
+          LiteMode.toggleFlag(LiteMode.FLAG_LIQUID_GLASS, chatListBlurEnabled);
+          setUseThreeLinesLayout(largeAvatarsInChatList);
+          NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.dialogsNeedReload, true);
+      }
+
+      public static void resetCryptogramAppearance() {
+          applyCryptogramUiPreset(3);
       }
 
       public static String formatCryptogramTime(int timestamp) {
