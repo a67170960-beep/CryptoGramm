@@ -10,14 +10,18 @@ import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.text.InputType;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.messenger.R;
+import org.telegram.messenger.CryptogramStyleScript;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.ui.ActionBar.ActionBar;
+import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
@@ -27,6 +31,7 @@ import org.telegram.ui.Cells.ShadowSectionCell;
 import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextCheckCell;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
+import org.telegram.ui.Components.EditTextBoldCursor;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
 import org.telegram.ui.Components.SeekBarView;
@@ -69,6 +74,10 @@ public class CryptogramUISettingsActivity extends BaseFragment {
     private int timeSizeRow;
     private int checkStyleRow;
     private int miscInfoRow;
+    private int styleScriptsHeaderRow;
+    private int applyStyleScriptRow;
+    private int styleScriptDocsRow;
+    private int styleScriptsInfoRow;
 
     private void updateRows() {
         rowCount = 0;
@@ -102,6 +111,11 @@ public class CryptogramUISettingsActivity extends BaseFragment {
         timeSizeRow = rowCount++;
         checkStyleRow = rowCount++;
         miscInfoRow = rowCount++;
+
+        styleScriptsHeaderRow = rowCount++;
+        applyStyleScriptRow = rowCount++;
+        styleScriptDocsRow = rowCount++;
+        styleScriptsInfoRow = rowCount++;
     }
 
     @Override
@@ -146,6 +160,10 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                 SharedConfig.resetCryptogramAppearance();
                 reloadThemeResources();
                 listAdapter.notifyDataSetChanged();
+            } else if (position == applyStyleScriptRow) {
+                showApplyStyleScriptDialog();
+            } else if (position == styleScriptDocsRow) {
+                showStyleScriptDocumentation();
             } else if (position == blurEnabledRow) {
                 SharedConfig.toggleChatListBlur();
                 if (view instanceof TextCheckCell) {
@@ -218,6 +236,64 @@ public class CryptogramUISettingsActivity extends BaseFragment {
         });
 
         return fragmentView;
+    }
+
+    private void showApplyStyleScriptDialog() {
+        Context context = getParentActivity();
+        if (context == null) {
+            return;
+        }
+        EditTextBoldCursor editor = new EditTextBoldCursor(context);
+        editor.setText(CryptogramStyleScript.getExampleScript());
+        editor.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        editor.setSingleLine(false);
+        editor.setGravity(Gravity.TOP | Gravity.LEFT);
+        editor.setTextSize(14);
+        editor.setMinLines(8);
+        editor.setMaxLines(14);
+        editor.setPadding(org.telegram.messenger.AndroidUtilities.dp(16), org.telegram.messenger.AndroidUtilities.dp(8),
+                org.telegram.messenger.AndroidUtilities.dp(16), org.telegram.messenger.AndroidUtilities.dp(8));
+        editor.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
+
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.addView(editor, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 240));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Сценарий оформления JSON");
+        builder.setView(layout);
+        builder.setPositiveButton("Применить", (dialogInterface, which) -> {
+            try {
+                String name = CryptogramStyleScript.apply(editor.getText().toString());
+                reloadThemeResources();
+                listAdapter.notifyDataSetChanged();
+                AlertDialog.Builder result = new AlertDialog.Builder(context);
+                result.setTitle("Сценарий применён");
+                result.setMessage("Профиль «" + name + "» применён к внешнему виду.");
+                result.setPositiveButton("Готово", null);
+                showDialog(result.create());
+            } catch (org.json.JSONException | IllegalArgumentException error) {
+                AlertDialog.Builder result = new AlertDialog.Builder(context);
+                result.setTitle("Не удалось применить сценарий");
+                result.setMessage(error.getMessage() == null ? "Проверь JSON и допустимые значения." : error.getMessage());
+                result.setPositiveButton("Закрыть", null);
+                showDialog(result.create());
+            }
+        });
+        builder.setNegativeButton("Отмена", null);
+        showDialog(builder.create());
+    }
+
+    private void showStyleScriptDocumentation() {
+        Context context = getParentActivity();
+        if (context == null) {
+            return;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Документация сценариев оформления");
+        builder.setMessage(CryptogramStyleScript.getDocumentation());
+        builder.setPositiveButton("Понятно", null);
+        showDialog(builder.create());
     }
 
     private void reloadThemeResources() {
@@ -303,7 +379,7 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                     || position == vibrationRow || position == uiSoundsRow || position == largeAvatarsRow
                     || position == hideNavLabelsRow || position == compactChatListRow || position == snowEffectRow
                     || position == timeFormatRow || position == timeSecondsRow || position == timeColorRow
-                    || position == checkStyleRow;
+                    || position == checkStyleRow || position == applyStyleScriptRow || position == styleScriptDocsRow;
         }
 
         @Override
@@ -358,6 +434,8 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                         headerCell.setText("Сообщения");
                     } else if (position == miscHeaderRow) {
                         headerCell.setText("Прочее");
+                    } else if (position == styleScriptsHeaderRow) {
+                        headerCell.setText("Сценарии оформления");
                     }
                     break;
                 }
@@ -398,6 +476,8 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                         cell.setText("Применяется к фону при прокрутке списка чатов.");
                     } else if (position == miscInfoRow) {
                         cell.setText("Время, галочки и другие параметры применяются сразу после перерисовки чата.");
+                    } else if (position == styleScriptsInfoRow) {
+                        cell.setText("Сценарии — это JSON-профили оформления, а не исполняемый код. Доступны только перечисленные в документации параметры интерфейса.");
                     }
                     break;
                 }
@@ -420,6 +500,10 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                         textCell.setTextAndValue("Пресет оформления", SharedConfig.getCryptogramUiPresetName(), true);
                     } else if (position == resetRow) {
                         textCell.setTextAndIcon("Сбросить оформление", R.drawable.msg_delete_filled, false);
+                    } else if (position == applyStyleScriptRow) {
+                        textCell.setTextAndValue("Применить JSON-сценарий", "Оформление и форматирование", true);
+                    } else if (position == styleScriptDocsRow) {
+                        textCell.setTextAndValue("Документация сценариев", "Формат и параметры", false);
                     }
                     break;
                 }
@@ -430,9 +514,9 @@ public class CryptogramUISettingsActivity extends BaseFragment {
         public int getItemViewType(int position) {
             if (position == heroRow) {
                 return 5;
-            } else if (position == presetRow || position == resetRow) {
+            } else if (position == presetRow || position == resetRow || position == applyStyleScriptRow || position == styleScriptDocsRow) {
                 return 4;
-            } else if (position == blurHeaderRow || position == animHeaderRow || position == bubbleHeaderRow || position == miscHeaderRow) {
+            } else if (position == blurHeaderRow || position == animHeaderRow || position == bubbleHeaderRow || position == miscHeaderRow || position == styleScriptsHeaderRow) {
                 return 0;
             } else if (position == blurEnabledRow || position == animEnabledRow || position == roundedBubblesRow
                     || position == vibrationRow || position == uiSoundsRow || position == largeAvatarsRow
@@ -440,7 +524,7 @@ public class CryptogramUISettingsActivity extends BaseFragment {
                     || position == timeFormatRow || position == timeSecondsRow || position == timeColorRow
                     || position == checkStyleRow) {
                 return 1;
-            } else if (position == blurInfoRow || position == miscInfoRow) {
+            } else if (position == blurInfoRow || position == miscInfoRow || position == styleScriptsInfoRow) {
                 return 2;
             } else if (position == blurIntensityRow || position == animSpeedRow || position == bubbleRoundnessRow || position == timeSizeRow) {
                 return 3;
