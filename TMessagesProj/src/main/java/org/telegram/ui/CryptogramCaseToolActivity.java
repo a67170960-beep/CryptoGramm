@@ -779,24 +779,24 @@ public class CryptogramCaseToolActivity extends BaseFragment {
         html.append("body{font:14px sans-serif;background:#17212b;color:#d8e0e8;margin:24px}h1,h2{color:#fff}section{border:1px solid #40505e;padding:12px;margin:12px 0;border-radius:6px}small{color:#9eacb8}.muted{color:#9eacb8}");
         html.append("</style></head><body><h1>").append(escapeHtml(currentCase.optString("title"))).append("</h1><p class=\"muted\">").append(escapeHtml(statusText(currentCase.optString("status")))).append("</p>");
         JSONArray nodes = currentCase.optJSONArray("nodes");
-        html.append("<h2>Entities</h2>");
+        html.append("<h2>").append(escapeHtml(LocaleController.getString(R.string.CaseReportEntities))).append("</h2>");
         if (nodes != null) {
             for (int i = 0; i < nodes.length(); i++) {
                 JSONObject node = nodes.optJSONObject(i);
-                if (node != null) html.append("<section><b>").append(escapeHtml(node.optString("label"))).append("</b><br><small>").append(escapeHtml(node.optString("type"))).append("</small><p>").append(escapeHtml(node.optString("notes"))).append("</p><p class=\"muted\">Sensitive values omitted</p></section>");
+                if (node != null) html.append("<section><b>").append(escapeHtml(node.optString("label"))).append("</b><br><small>").append(escapeHtml(node.optString("type"))).append("</small><p>").append(escapeHtml(node.optString("notes"))).append("</p><p class=\"muted\">").append(escapeHtml(LocaleController.getString(R.string.CaseSensitiveOmitted))).append("</p></section>");
             }
         }
         JSONArray edges = currentCase.optJSONArray("edges");
-        html.append("<h2>Relationships</h2>");
+        html.append("<h2>").append(escapeHtml(LocaleController.getString(R.string.CaseReportRelations))).append("</h2>");
         if (edges != null) {
             for (int i = 0; i < edges.length(); i++) {
                 JSONObject edge = edges.optJSONObject(i);
-                if (edge != null) html.append("<section>").append(escapeHtml(edge.optString("type"))).append(" · confidence ").append(edge.optInt("confidence")).append("%</section>");
+                if (edge != null) html.append("<section>").append(escapeHtml(edge.optString("type"))).append(" · ").append(escapeHtml(LocaleController.getString(R.string.CaseReportConfidence))).append(" ").append(edge.optInt("confidence")).append("%</section>");
             }
         }
-        appendReportArray(html, "Hypotheses", currentCase.optJSONArray("hypotheses"), "title", "status");
-        appendReportArray(html, "Tasks", currentCase.optJSONArray("tasks"), "title", "done");
-        appendReportArray(html, "Evidence", currentCase.optJSONArray("evidence"), "title", "source");
+        appendReportArray(html, LocaleController.getString(R.string.CaseHypotheses), currentCase.optJSONArray("hypotheses"), "title", "status");
+        appendReportArray(html, LocaleController.getString(R.string.CaseTasks), currentCase.optJSONArray("tasks"), "title", "done");
+        appendReportArray(html, LocaleController.getString(R.string.CaseEvidence), currentCase.optJSONArray("evidence"), "title", "source");
         html.append("</body></html>");
         return html.toString();
     }
