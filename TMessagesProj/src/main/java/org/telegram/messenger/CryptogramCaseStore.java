@@ -2,6 +2,7 @@ package org.telegram.messenger;
 
 import android.content.Context;
 import android.security.KeyPairGeneratorSpec;
+import android.util.AtomicFile;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -112,21 +113,14 @@ public final class CryptogramCaseStore {
         byte[] encrypted = encrypt(context, account, clear);
         File dir = accountDirectory(context, account);
         File target = new File(dir, id + ".case");
-        File temp = new File(dir, id + ".tmp");
-        FileOutputStream stream = new FileOutputStream(temp);
+        AtomicFile atomicFile = new AtomicFile(target);
+        FileOutputStream stream = atomicFile.startWrite();
         try {
             stream.write(encrypted);
-            stream.getFD().sync();
-        } finally {
-            stream.close();
-        }
-        if (target.exists() && !target.delete()) {
-            temp.delete();
-            throw new IllegalStateException("Could not replace case file.");
-        }
-        if (!temp.renameTo(target)) {
-            temp.delete();
-            throw new IllegalStateException("Could not commit case file.");
+            atomicFile.finishWrite(stream);
+        } catch (Exception e) {
+            atomicFile.failWrite(stream);
+            throw e;
         }
     }
 

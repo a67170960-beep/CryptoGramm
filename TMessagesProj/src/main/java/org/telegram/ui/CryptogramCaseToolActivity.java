@@ -234,13 +234,14 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                 .setPositiveButton(LocaleController.getString(R.string.CaseCreate), (dialog, which) -> {
                     try {
                         JSONObject item = CryptogramCaseStore.newCase(title.getText().toString());
-                        CryptogramCaseStore.save(context, currentAccount, item);
                         recordEvent(item, LocaleController.getString(R.string.CaseEventCreated), null);
                         CryptogramCaseStore.save(context, currentAccount, item);
                         currentCase = item;
                         render();
-                    } catch (Exception e) {
+                    } catch (IllegalArgumentException e) {
                         toast(R.string.CaseInvalidTitle);
+                    } catch (Exception e) {
+                        toast(R.string.CaseWriteError);
                     }
                 }).show();
     }
@@ -481,9 +482,13 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                 .setItems(labels, (dialog, which) -> {
                     JSONObject task = tasks.optJSONObject(which);
                     if (task != null) {
-                        task.put("done", !task.optBoolean("done"));
-                        recordEvent(currentCase, LocaleController.getString(R.string.CaseEventTaskUpdated) + ": " + task.optString("title"), null);
-                        saveCurrent();
+                        try {
+                            task.put("done", !task.optBoolean("done"));
+                            recordEvent(currentCase, LocaleController.getString(R.string.CaseEventTaskUpdated) + ": " + task.optString("title"), null);
+                            saveCurrent();
+                        } catch (JSONException e) {
+                            toast(R.string.CaseWriteError);
+                        }
                     }
                 })
                 .setPositiveButton(LocaleController.getString(R.string.CaseDone), null)
@@ -530,10 +535,14 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                 .setItems(labels, (dialog, which) -> {
                     JSONObject item = items.optJSONObject(which);
                     if (item != null) {
-                        String status = item.optString("status", "unverified");
-                        item.put("status", "unverified".equals(status) ? "confirmed" : ("confirmed".equals(status) ? "refuted" : "unverified"));
-                        recordEvent(currentCase, LocaleController.getString(R.string.CaseEventHypothesisChanged), null);
-                        saveCurrent();
+                        try {
+                            String status = item.optString("status", "unverified");
+                            item.put("status", "unverified".equals(status) ? "confirmed" : ("confirmed".equals(status) ? "refuted" : "unverified"));
+                            recordEvent(currentCase, LocaleController.getString(R.string.CaseEventHypothesisChanged), null);
+                            saveCurrent();
+                        } catch (JSONException e) {
+                            toast(R.string.CaseWriteError);
+                        }
                     }
                 })
                 .setPositiveButton(LocaleController.getString(R.string.CaseDone), null)
@@ -669,11 +678,15 @@ public class CryptogramCaseToolActivity extends BaseFragment {
     }
 
     private void cycleStatus() {
-        String status = currentCase.optString("status", "open");
-        String next = "open".equals(status) ? "in_progress" : ("in_progress".equals(status) ? "resolved" : ("resolved".equals(status) ? "archived" : "open"));
-        currentCase.put("status", next);
-        recordEvent(currentCase, LocaleController.getString(R.string.CaseEventStatusChanged) + ": " + statusText(next), null);
-        saveCurrent();
+        try {
+            String status = currentCase.optString("status", "open");
+            String next = "open".equals(status) ? "in_progress" : ("in_progress".equals(status) ? "resolved" : ("resolved".equals(status) ? "archived" : "open"));
+            currentCase.put("status", next);
+            recordEvent(currentCase, LocaleController.getString(R.string.CaseEventStatusChanged) + ": " + statusText(next), null);
+            saveCurrent();
+        } catch (JSONException e) {
+            toast(R.string.CaseWriteError);
+        }
     }
 
     private int statusActionLabel() {
@@ -712,10 +725,14 @@ public class CryptogramCaseToolActivity extends BaseFragment {
     }
 
     private void chooseExportJson() {
-        pendingExport = CryptogramCaseStore.exportJson(currentCase);
-        pendingMime = "application/json";
-        pendingRequest = REQUEST_EXPORT_JSON;
-        createExportDocument("case-" + currentCase.optString("id") + ".json", pendingMime, pendingRequest);
+        try {
+            pendingExport = CryptogramCaseStore.exportJson(currentCase);
+            pendingMime = "application/json";
+            pendingRequest = REQUEST_EXPORT_JSON;
+            createExportDocument("case-" + currentCase.optString("id") + ".json", pendingMime, pendingRequest);
+        } catch (JSONException e) {
+            toast(R.string.CaseWriteError);
+        }
     }
 
     private void chooseExportHtml() {
@@ -1121,9 +1138,16 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                 JSONArray nodes = data.optJSONArray("nodes");
                 JSONObject node = nodes == null ? null : nodes.optJSONObject(movingIndex);
                 if (node != null && getWidth() > nodeWidth && getHeight() > nodeHeight) {
-                    node.put("x", clamp((x - moveOffsetX) / getWidth(), nodeWidth / (2 * getWidth()), 1 - nodeWidth / (2 * getWidth())));
-                    node.put("y", clamp((y - moveOffsetY) / getHeight(), nodeHeight / (2 * getHeight()), 1 - nodeHeight / (2 * getHeight())));
-                    invalidate();
+                    try {
+                        JSONObject movedNode = new JSONObject(node.toString());
+                        movedNode.put("x", clamp((x - moveOffsetX) / getWidth(), nodeWidth / (2 * getWidth()), 1 - nodeWidth / (2 * getWidth())));
+                        movedNode.put("y", clamp((y - moveOffsetY) / getHeight(), nodeHeight / (2 * getHeight()), 1 - nodeHeight / (2 * getHeight())));
+                        nodes.put(movingIndex, movedNode);
+                        invalidate();
+                    } catch (JSONException e) {
+                        movingIndex = -1;
+                        toast(R.string.CaseWriteError);
+                    }
                 }
                 return true;
             } else if (event.getAction() == MotionEvent.ACTION_UP) {
