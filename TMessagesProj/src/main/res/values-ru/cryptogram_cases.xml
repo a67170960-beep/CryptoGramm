@@ -68,4 +68,23 @@
     <string name="CaseHypothesisTitle">Гипотеза</string>
     <string name="CaseTypeOtherCustom">Свой тип сущности</string>
     <string name="CaseExtractDisclaimer">Извлечение работает только с текстом, который вы вставили сюда. Приложение не ищет в интернете, не читает другие чаты и не отправляет данные.</string>
+    <string name="CaseReportEntities">Сущности</string>
+    <string name="CaseReportRelations">Связи</string>
+    <string name="CaseReportConfidence">достоверность</string>
+    <string name="CaseSensitiveOmitted">Чувствительные значения из отчёта исключены.</string>
+    <string name="CaseHypothesisUnverified">Не проверена</string>
+    <string name="CaseHypothesisConfirmed">Подтверждена</string>
+    <string name="CaseHypothesisRefuted">Опровергнута</string>
+    <string name="CaseEventCreated">Кейс создан</string>
+    <string name="CaseEventEntityAdded">Добавлена сущность</string>
+    <string name="CaseEventRelationshipAdded">Добавлена связь</string>
+    <string name="CaseEventCandidateAdded">Вариант добавлен из выбранного текста</string>
+    <string name="CaseEventTaskAdded">Добавлена задача</string>
+    <string name="CaseEventTaskUpdated">Задача обновлена</string>
+    <string name="CaseEventHypothesisAdded">Добавлена гипотеза</string>
+    <string name="CaseEventHypothesisChanged">Изменён статус гипотезы</string>
+    <string name="CaseEventEvidenceRecorded">Зафиксировано доказательство</string>
+    <string name="CaseEventStatusChanged">Изменён статус кейса</string>
+    <string name="CaseSourceSelectedText">Добавлено из выбранного пользователем текста</string>
+    <string name="CaseOtherTypeLabel">Введите свой тип сущности</string>
 </resources>
