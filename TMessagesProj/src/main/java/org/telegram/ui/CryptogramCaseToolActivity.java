@@ -281,11 +281,13 @@ public class CryptogramCaseToolActivity extends BaseFragment {
     private void showEntityForm(String type) {
         LinearLayout form = formLayout();
         EditText name = input(LocaleController.getString(R.string.CaseEntityName), true);
+        EditText customType = "other".equals(type) ? input(LocaleController.getString(R.string.CaseOtherTypeLabel), true) : null;
         EditText notes = input(LocaleController.getString(R.string.CaseNotes), false);
         EditText privateData = input(LocaleController.getString(R.string.CaseSensitiveData), false);
         EditText latitude = input(LocaleController.getString(R.string.CaseLatitude), true);
         EditText longitude = input(LocaleController.getString(R.string.CaseLongitude), true);
         appendInput(form, name);
+        if (customType != null) appendInput(form, customType);
         appendInput(form, notes);
         appendInput(form, privateData);
         appendInput(form, latitude);
@@ -304,7 +306,8 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                         JSONArray nodes = currentCase.getJSONArray("nodes");
                         JSONObject node = new JSONObject();
                         node.put("id", UUID.randomUUID().toString());
-                        node.put("type", type);
+                        String actualType = customType == null ? type : customType.getText().toString().trim();
+                        node.put("type", actualType.isEmpty() ? type : actualType);
                         node.put("label", label);
                         node.put("notes", notes.getText().toString());
                         node.put("privateData", privateData.getText().toString());
@@ -520,7 +523,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
         String[] labels = new String[items.length()];
         for (int i = 0; i < items.length(); i++) {
             JSONObject item = items.optJSONObject(i);
-            labels[i] = (item == null ? "" : item.optString("status")) + "  ·  " + (item == null ? "" : item.optString("title"));
+            labels[i] = (item == null ? "" : hypothesisStatus(item.optString("status"))) + "  ·  " + (item == null ? "" : item.optString("title"));
         }
         new android.app.AlertDialog.Builder(context)
                 .setTitle(LocaleController.getString(R.string.CaseHypotheses))
@@ -535,6 +538,12 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                 })
                 .setPositiveButton(LocaleController.getString(R.string.CaseDone), null)
                 .show();
+    }
+
+    private String hypothesisStatus(String status) {
+        if ("confirmed".equals(status)) return LocaleController.getString(R.string.CaseHypothesisConfirmed);
+        if ("refuted".equals(status)) return LocaleController.getString(R.string.CaseHypothesisRefuted);
+        return LocaleController.getString(R.string.CaseHypothesisUnverified);
     }
 
     private void showAddEvidence() {
