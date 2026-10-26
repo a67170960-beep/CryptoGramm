@@ -235,7 +235,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                     try {
                         JSONObject item = CryptogramCaseStore.newCase(title.getText().toString());
                         CryptogramCaseStore.save(context, currentAccount, item);
-                        recordEvent(item, "Case created", null);
+                        recordEvent(item, LocaleController.getString(R.string.CaseEventCreated), null);
                         CryptogramCaseStore.save(context, currentAccount, item);
                         currentCase = item;
                         render();
@@ -317,7 +317,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                             node.put("longitude", lon);
                         }
                         nodes.put(node);
-                        recordEvent(currentCase, "Entity added: " + label, node.optString("id"));
+                        recordEvent(currentCase, LocaleController.getString(R.string.CaseEventEntityAdded) + ": " + label, node.optString("id"));
                         saveCurrent();
                     } catch (Exception e) {
                         toast(R.string.CaseWriteError);
@@ -376,7 +376,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                         int value = Integer.parseInt(confidence.getText().toString().trim());
                         edge.put("confidence", Math.max(0, Math.min(100, value)));
                         currentCase.getJSONArray("edges").put(edge);
-                        recordEvent(currentCase, "Relationship added", null);
+                        recordEvent(currentCase, LocaleController.getString(R.string.CaseEventRelationshipAdded), null);
                         saveCurrent();
                     } catch (Exception e) {
                         toast(R.string.CaseWriteError);
@@ -425,13 +425,13 @@ public class CryptogramCaseToolActivity extends BaseFragment {
             node.put("id", UUID.randomUUID().toString());
             node.put("type", candidate.optString("type", "other"));
             node.put("label", candidate.optString("value", ""));
-            node.put("notes", "Added from user-selected text");
+            node.put("notes", LocaleController.getString(R.string.CaseSourceSelectedText));
             node.put("privateData", "");
             node.put("source", candidate.optString("source", "selected_text"));
             node.put("x", 0.16 + (nodes.length() % 4) * 0.21);
             node.put("y", 0.18 + ((nodes.length() / 4) % 4) * 0.19);
             nodes.put(node);
-            recordEvent(currentCase, "Candidate added from selected text", node.optString("id"));
+            recordEvent(currentCase, LocaleController.getString(R.string.CaseEventCandidateAdded), node.optString("id"));
             saveCurrent();
         } catch (Exception e) {
             toast(R.string.CaseWriteError);
@@ -453,7 +453,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                             task.put("title", value);
                             task.put("done", false);
                             currentCase.getJSONArray("tasks").put(task);
-                            recordEvent(currentCase, "Task added: " + value, null);
+                            recordEvent(currentCase, LocaleController.getString(R.string.CaseEventTaskAdded) + ": " + value, null);
                             saveCurrent();
                         } catch (Exception e) {
                             toast(R.string.CaseWriteError);
@@ -479,7 +479,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                     JSONObject task = tasks.optJSONObject(which);
                     if (task != null) {
                         task.put("done", !task.optBoolean("done"));
-                        recordEvent(currentCase, "Task updated: " + task.optString("title"), null);
+                        recordEvent(currentCase, LocaleController.getString(R.string.CaseEventTaskUpdated) + ": " + task.optString("title"), null);
                         saveCurrent();
                     }
                 })
@@ -502,7 +502,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                             hypothesis.put("title", value);
                             hypothesis.put("status", "unverified");
                             currentCase.getJSONArray("hypotheses").put(hypothesis);
-                            recordEvent(currentCase, "Hypothesis added", null);
+                            recordEvent(currentCase, LocaleController.getString(R.string.CaseEventHypothesisAdded), null);
                             saveCurrent();
                         } catch (Exception e) {
                             toast(R.string.CaseWriteError);
@@ -529,7 +529,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                     if (item != null) {
                         String status = item.optString("status", "unverified");
                         item.put("status", "unverified".equals(status) ? "confirmed" : ("confirmed".equals(status) ? "refuted" : "unverified"));
-                        recordEvent(currentCase, "Hypothesis status changed", null);
+                        recordEvent(currentCase, LocaleController.getString(R.string.CaseEventHypothesisChanged), null);
                         saveCurrent();
                     }
                 })
@@ -558,7 +558,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                         evidence.put("notes", notes.getText().toString());
                         evidence.put("capturedAt", System.currentTimeMillis());
                         currentCase.getJSONArray("evidence").put(evidence);
-                        recordEvent(currentCase, "Evidence recorded: " + evidence.optString("title"), null);
+                        recordEvent(currentCase, LocaleController.getString(R.string.CaseEventEvidenceRecorded) + ": " + evidence.optString("title"), null);
                         saveCurrent();
                     } catch (Exception e) {
                         toast(R.string.CaseWriteError);
@@ -663,7 +663,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
         String status = currentCase.optString("status", "open");
         String next = "open".equals(status) ? "in_progress" : ("in_progress".equals(status) ? "resolved" : ("resolved".equals(status) ? "archived" : "open"));
         currentCase.put("status", next);
-        recordEvent(currentCase, "Case status: " + next, null);
+        recordEvent(currentCase, LocaleController.getString(R.string.CaseEventStatusChanged) + ": " + statusText(next), null);
         saveCurrent();
     }
 
