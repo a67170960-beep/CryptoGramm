@@ -653,7 +653,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
         String label = node.optString("label", "");
         String uri = "geo:" + node.optDouble("latitude") + "," + node.optDouble("longitude") + "?q=" + node.optDouble("latitude") + "," + node.optDouble("longitude");
         try {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(uri)));
+            getParentActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(uri)));
         } catch (Exception e) {
             toast(R.string.CaseLocationMissing);
         }
