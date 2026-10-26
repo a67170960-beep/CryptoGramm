@@ -68,4 +68,23 @@
     <string name="CaseHypothesisTitle">Hypothesis</string>
     <string name="CaseTypeOtherCustom">Custom entity type</string>
     <string name="CaseExtractDisclaimer">Extraction runs only on text you paste here. It does not search the web, inspect other chats, or send data.</string>
+    <string name="CaseReportEntities">Entities</string>
+    <string name="CaseReportRelations">Relationships</string>
+    <string name="CaseReportConfidence">confidence</string>
+    <string name="CaseSensitiveOmitted">Sensitive values omitted from this report.</string>
+    <string name="CaseHypothesisUnverified">Unverified</string>
+    <string name="CaseHypothesisConfirmed">Confirmed</string>
+    <string name="CaseHypothesisRefuted">Refuted</string>
+    <string name="CaseEventCreated">Case created</string>
+    <string name="CaseEventEntityAdded">Entity added</string>
+    <string name="CaseEventRelationshipAdded">Relationship added</string>
+    <string name="CaseEventCandidateAdded">Candidate added from selected text</string>
+    <string name="CaseEventTaskAdded">Task added</string>
+    <string name="CaseEventTaskUpdated">Task updated</string>
+    <string name="CaseEventHypothesisAdded">Hypothesis added</string>
+    <string name="CaseEventHypothesisChanged">Hypothesis status changed</string>
+    <string name="CaseEventEvidenceRecorded">Evidence recorded</string>
+    <string name="CaseEventStatusChanged">Case status changed</string>
+    <string name="CaseSourceSelectedText">Added from user-selected text</string>
+    <string name="CaseOtherTypeLabel">Enter a custom entity type</string>
 </resources>
