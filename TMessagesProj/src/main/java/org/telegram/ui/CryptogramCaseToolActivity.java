@@ -176,27 +176,34 @@ public class CryptogramCaseToolActivity extends BaseFragment {
     private void renderBoard() {
         String title = currentCase.optString("title", "");
         addHeading(content, title);
+        addSectionLabel(content, R.string.CaseSectionBoard);
         addAction(content, statusActionLabel(), this::cycleStatus);
+        addParagraph(content, LocaleController.getString(R.string.CaseStatusTapHint));
         addProgress();
         graphView = new CaseGraphView(context, currentCase);
         LinearLayout.LayoutParams graphParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, AndroidUtilities.dp(390));
         graphParams.topMargin = AndroidUtilities.dp(8);
         graphParams.bottomMargin = AndroidUtilities.dp(10);
         content.addView(graphView, graphParams);
+        addParagraph(content, LocaleController.getString(R.string.CaseGraphHelp));
         selectionLabel = addParagraph(content, LocaleController.getString(R.string.CaseAddEntity));
         graphView.setSelectionListener(index -> updateSelectedLabel(index));
+        addSectionLabel(content, R.string.CaseSectionEntities);
         addAction(content, R.string.CaseAddEntity, this::showAddEntityType);
         addAction(content, R.string.CaseAddRelation, this::showAddRelation);
+        addSectionLabel(content, R.string.CaseSectionAnalysis);
         addAction(content, R.string.CaseExtractText, this::showExtractTextDialog);
         addAction(content, R.string.CaseSensitiveReveal, this::revealSensitive);
         addAction(content, R.string.CaseTasks, this::showTasks);
         addAction(content, R.string.CaseAddTask, this::showAddTask);
         addAction(content, R.string.CaseHypotheses, this::showHypotheses);
         addAction(content, R.string.CaseAddHypothesis, this::showAddHypothesis);
+        addSectionLabel(content, R.string.CaseSectionRecords);
         addAction(content, R.string.CaseEvidence, this::showEvidence);
         addAction(content, R.string.CaseAddEvidence, this::showAddEvidence);
         addAction(content, R.string.CaseTimeline, this::showTimeline);
         addAction(content, R.string.CaseMap, this::showCoordinates);
+        addSectionLabel(content, R.string.CaseSectionExport);
         addAction(content, R.string.CaseExportJson, () -> authenticate(() -> chooseExportJson()));
         addAction(content, R.string.CaseExportHtml, this::chooseExportHtml);
         addAction(content, R.string.CasePrintReport, this::printReport);
@@ -263,6 +270,10 @@ public class CryptogramCaseToolActivity extends BaseFragment {
     private void showAddEntityType() {
         String[] labels = new String[] {
                 LocaleController.getString(R.string.CaseTypePerson),
+                LocaleController.getString(R.string.CaseTypePhone),
+                LocaleController.getString(R.string.CaseTypeEmail),
+                LocaleController.getString(R.string.CaseTypeUsername),
+                LocaleController.getString(R.string.CaseTypeSocialProfile),
                 LocaleController.getString(R.string.CaseTypeChat),
                 LocaleController.getString(R.string.CaseTypeChannel),
                 LocaleController.getString(R.string.CaseTypeDomain),
@@ -271,7 +282,7 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                 LocaleController.getString(R.string.CaseTypeOrganization),
                 LocaleController.getString(R.string.CaseTypeOther)
         };
-        String[] types = new String[] { "person", "chat", "channel", "domain", "file", "place", "organization", "other" };
+        String[] types = new String[] { "person", "phone", "email", "username", "social_profile", "chat", "channel", "domain", "file", "place", "organization", "other" };
         new android.app.AlertDialog.Builder(context)
                 .setTitle(LocaleController.getString(R.string.CaseAddEntity))
                 .setItems(labels, (dialog, which) -> showEntityForm(types[which]))
@@ -282,23 +293,52 @@ public class CryptogramCaseToolActivity extends BaseFragment {
     private void showEntityForm(String type) {
         LinearLayout form = formLayout();
         EditText name = input(LocaleController.getString(R.string.CaseEntityName), true);
+        boolean contactValue = "phone".equals(type) || "email".equals(type);
+        boolean profile = "username".equals(type) || "social_profile".equals(type);
+        if (contactValue) {
+            name.setHint(LocaleController.getString(R.string.CaseContactLabel));
+        } else if (profile) {
+            name.setHint(LocaleController.getString(R.string.CaseHandleOrUrl));
+        }
         EditText customType = "other".equals(type) ? input(LocaleController.getString(R.string.CaseOtherTypeLabel), true) : null;
         EditText notes = input(LocaleController.getString(R.string.CaseNotes), false);
-        EditText privateData = input(LocaleController.getString(R.string.CaseSensitiveData), false);
+        EditText privateData = input("phone".equals(type) ? LocaleController.getString(R.string.CasePhoneValue)
+                : ("email".equals(type) ? LocaleController.getString(R.string.CaseEmailValue)
+                : LocaleController.getString(R.string.CaseSensitiveData)), contactValue);
+        if ("phone".equals(type)) {
+            privateData.setInputType(InputType.TYPE_CLASS_PHONE);
+        } else if ("email".equals(type)) {
+            privateData.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        }
+        EditText platform = profile ? input(LocaleController.getString(R.string.CasePlatform), true) : null;
         EditText latitude = input(LocaleController.getString(R.string.CaseLatitude), true);
         EditText longitude = input(LocaleController.getString(R.string.CaseLongitude), true);
         appendInput(form, name);
         if (customType != null) appendInput(form, customType);
+        if (platform != null) appendInput(form, platform);
         appendInput(form, notes);
         appendInput(form, privateData);
-        appendInput(form, latitude);
-        appendInput(form, longitude);
+        if ("place".equals(type)) {
+            appendInput(form, latitude);
+            appendInput(form, longitude);
+        }
         new android.app.AlertDialog.Builder(context)
                 .setTitle(LocaleController.getString(R.string.CaseAddNodePrompt))
                 .setView(form)
                 .setNegativeButton(LocaleController.getString(R.string.Cancel), null)
                 .setPositiveButton(LocaleController.getString(R.string.CaseDone), (dialog, which) -> {
                     String label = name.getText().toString().trim();
+                    String privateValue = privateData.getText().toString().trim();
+                    if (contactValue && privateValue.isEmpty()) {
+                        toast(R.string.CaseContactValueRequired);
+                        return;
+                    }
+                    if (contactValue && label.isEmpty()) {
+                        label = LocaleController.getString("phone".equals(type) ? R.string.CaseTypePhone : R.string.CaseTypeEmail);
+                    }
+                    if (contactValue && sameContactValue(label, privateValue, "phone".equals(type))) {
+                        label = LocaleController.getString("phone".equals(type) ? R.string.CaseTypePhone : R.string.CaseTypeEmail);
+                    }
                     if (label.isEmpty()) {
                         toast(R.string.CaseInvalidTitle);
                         return;
@@ -311,7 +351,10 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                         node.put("type", actualType.isEmpty() ? type : actualType);
                         node.put("label", label);
                         node.put("notes", notes.getText().toString());
-                        node.put("privateData", privateData.getText().toString());
+                        node.put("privateData", privateValue);
+                        if (platform != null && !platform.getText().toString().trim().isEmpty()) {
+                            node.put("platform", platform.getText().toString().trim());
+                        }
                         node.put("x", 0.15 + (nodes.length() % 4) * 0.21);
                         node.put("y", 0.18 + ((nodes.length() / 4) % 4) * 0.19);
                         double lat = parseCoordinate(latitude.getText().toString(), -90, 90);
@@ -427,10 +470,13 @@ public class CryptogramCaseToolActivity extends BaseFragment {
             JSONArray nodes = currentCase.getJSONArray("nodes");
             JSONObject node = new JSONObject();
             node.put("id", UUID.randomUUID().toString());
-            node.put("type", candidate.optString("type", "other"));
-            node.put("label", candidate.optString("value", ""));
+            String type = candidate.optString("type", "other");
+            String value = candidate.optString("value", "");
+            boolean privateValue = "phone".equals(type) || "email".equals(type);
+            node.put("type", type);
+            node.put("label", privateValue ? LocaleController.getString("phone".equals(type) ? R.string.CaseTypePhone : R.string.CaseTypeEmail) : value);
             node.put("notes", LocaleController.getString(R.string.CaseSourceSelectedText));
-            node.put("privateData", "");
+            node.put("privateData", privateValue ? value : "");
             node.put("source", candidate.optString("source", "selected_text"));
             node.put("x", 0.16 + (nodes.length() % 4) * 0.21);
             node.put("y", 0.18 + ((nodes.length() / 4) % 4) * 0.19);
@@ -1008,6 +1054,25 @@ public class CryptogramCaseToolActivity extends BaseFragment {
         button.setOnClickListener(view -> action.run());
     }
 
+    private void addSectionLabel(LinearLayout parent, int label) {
+        TextView view = new TextView(context);
+        view.setText(LocaleController.getString(label));
+        view.setTextColor(Color.rgb(137, 157, 173));
+        view.setTextSize(12);
+        view.setLetterSpacing(0.06f);
+        view.setPadding(0, AndroidUtilities.dp(16), 0, AndroidUtilities.dp(4));
+        parent.addView(view, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+    }
+
+    private boolean sameContactValue(String label, String privateValue, boolean phone) {
+        if (phone) {
+            String labelDigits = label.replaceAll("\\D", "");
+            String valueDigits = privateValue.replaceAll("\\D", "");
+            return !labelDigits.isEmpty() && labelDigits.equals(valueDigits);
+        }
+        return label.equalsIgnoreCase(privateValue);
+    }
+
     private void addCaseRow(String label, Runnable click, Runnable longClick) {
         TextView row = new TextView(context);
         row.setText(label);
@@ -1080,11 +1145,12 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                     int confidence = Math.max(0, Math.min(100, edge.optInt("confidence", 50)));
                     paint.setColor(Color.argb(90 + confidence * 150 / 100, 133, 161, 179));
                     paint.setStrokeWidth(AndroidUtilities.dp(1 + confidence / 45f));
-                    canvas.drawLine(p1[0], p1[1], p2[0], p2[1], paint);
+                    drawArrow(canvas, p1, p2);
                     paint.setStyle(Paint.Style.FILL);
                     paint.setTextSize(AndroidUtilities.dp(10));
                     paint.setColor(Color.rgb(170, 184, 195));
-                    canvas.drawText(edge.optString("type", "related"), (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2 - AndroidUtilities.dp(4), paint);
+                    String relationLabel = shortText(edge.optString("type", "related") + " · " + confidence + "%", 20);
+                    canvas.drawText(relationLabel, (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2 - AndroidUtilities.dp(4), paint);
                     paint.setStyle(Paint.Style.STROKE);
                 }
             }
@@ -1104,11 +1170,78 @@ public class CryptogramCaseToolActivity extends BaseFragment {
                 }
                 paint.setColor(Color.rgb(245, 247, 249));
                 paint.setTextSize(AndroidUtilities.dp(13));
-                canvas.drawText(shortText(node.optString("label"), 19), rect.left + AndroidUtilities.dp(8), rect.top + AndroidUtilities.dp(24), paint);
+                canvas.drawText(shortText(nodeLabel(node), 19), rect.left + AndroidUtilities.dp(8), rect.top + AndroidUtilities.dp(24), paint);
                 paint.setColor(Color.rgb(190, 204, 215));
                 paint.setTextSize(AndroidUtilities.dp(10));
-                canvas.drawText(shortText(node.optString("type"), 20), rect.left + AndroidUtilities.dp(8), rect.top + AndroidUtilities.dp(43), paint);
+                canvas.drawText(shortText(nodeSubtitle(node), 20), rect.left + AndroidUtilities.dp(8), rect.top + AndroidUtilities.dp(43), paint);
             }
+        }
+
+        private void drawArrow(Canvas canvas, float[] from, float[] to) {
+            float dx = to[0] - from[0];
+            float dy = to[1] - from[1];
+            float distance = (float) Math.hypot(dx, dy);
+            if (distance < AndroidUtilities.dp(2)) {
+                return;
+            }
+            float ux = dx / distance;
+            float uy = dy / distance;
+            float edgeX = Math.abs(ux) < 0.001f ? Float.MAX_VALUE : nodeWidth / (2f * Math.abs(ux));
+            float edgeY = Math.abs(uy) < 0.001f ? Float.MAX_VALUE : nodeHeight / (2f * Math.abs(uy));
+            float inset = Math.min(edgeX, edgeY) + AndroidUtilities.dp(2);
+            if (distance <= inset * 2 + AndroidUtilities.dp(6)) {
+                return;
+            }
+            float startX = from[0] + ux * inset;
+            float startY = from[1] + uy * inset;
+            float endX = to[0] - ux * inset;
+            float endY = to[1] - uy * inset;
+            canvas.drawLine(startX, startY, endX, endY, paint);
+            float arrowSize = AndroidUtilities.dp(8);
+            double angle = Math.atan2(uy, ux);
+            double left = angle + Math.PI * 0.82;
+            double right = angle - Math.PI * 0.82;
+            canvas.drawLine(endX, endY, endX + arrowSize * (float) Math.cos(left), endY + arrowSize * (float) Math.sin(left), paint);
+            canvas.drawLine(endX, endY, endX + arrowSize * (float) Math.cos(right), endY + arrowSize * (float) Math.sin(right), paint);
+        }
+
+        private String nodeLabel(JSONObject node) {
+            String label = node.optString("label", "");
+            String type = node.optString("type", "");
+            if (("phone".equals(type) || "email".equals(type)) && label.isEmpty()) {
+                return typeLabel(type);
+            }
+            return label;
+        }
+
+        private String nodeSubtitle(JSONObject node) {
+            String type = node.optString("type", "");
+            String value = typeLabel(type);
+            String platform = node.optString("platform", "").trim();
+            if (!platform.isEmpty()) {
+                value += " · " + platform;
+            }
+            if (("phone".equals(type) || "email".equals(type)) && !node.optString("privateData", "").isEmpty()) {
+                value += "  ••••";
+            }
+            return value;
+        }
+
+        private String typeLabel(String type) {
+            if ("phone".equals(type)) return LocaleController.getString(R.string.CaseTypePhone);
+            if ("email".equals(type)) return LocaleController.getString(R.string.CaseTypeEmail);
+            if ("username".equals(type)) return LocaleController.getString(R.string.CaseTypeUsername);
+            if ("social_profile".equals(type)) return LocaleController.getString(R.string.CaseTypeSocialProfile);
+            if ("url".equals(type)) return LocaleController.getString(R.string.CaseToolUrl);
+            if ("crypto_address".equals(type)) return LocaleController.getString(R.string.CaseToolCryptoAddress);
+            if ("person".equals(type)) return LocaleController.getString(R.string.CaseTypePerson);
+            if ("chat".equals(type)) return LocaleController.getString(R.string.CaseTypeChat);
+            if ("channel".equals(type)) return LocaleController.getString(R.string.CaseTypeChannel);
+            if ("domain".equals(type)) return LocaleController.getString(R.string.CaseTypeDomain);
+            if ("file".equals(type)) return LocaleController.getString(R.string.CaseTypeFile);
+            if ("place".equals(type)) return LocaleController.getString(R.string.CaseTypePlace);
+            if ("organization".equals(type)) return LocaleController.getString(R.string.CaseTypeOrganization);
+            return type;
         }
 
         @Override
@@ -1186,8 +1319,11 @@ public class CryptogramCaseToolActivity extends BaseFragment {
 
         private int typeColor(String type) {
             if ("person".equals(type)) return Color.rgb(61, 83, 99);
+            if ("phone".equals(type) || "email".equals(type)) return Color.rgb(77, 74, 57);
+            if ("username".equals(type) || "social_profile".equals(type)) return Color.rgb(55, 79, 78);
             if ("chat".equals(type) || "channel".equals(type)) return Color.rgb(55, 79, 78);
-            if ("domain".equals(type)) return Color.rgb(77, 74, 57);
+            if ("domain".equals(type) || "url".equals(type)) return Color.rgb(77, 74, 57);
+            if ("crypto_address".equals(type)) return Color.rgb(64, 75, 66);
             if ("file".equals(type)) return Color.rgb(76, 66, 81);
             if ("place".equals(type)) return Color.rgb(73, 70, 60);
             if ("organization".equals(type)) return Color.rgb(65, 78, 92);
