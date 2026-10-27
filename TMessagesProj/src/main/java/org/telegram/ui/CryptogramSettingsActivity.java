@@ -448,7 +448,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
             } else if (position == ghostModeInfoRow || position == ghostModeTypingInfoRow || position == ghostModeReadStatusInfoRow
                     || position == groupReadReceiptsInfoRow || position == extraInfoRow || position == aboutInfoRow) {
                 return 2;
-            } else if (position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == deletedMessagesRow || position == readAllRow
+            } else if (position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == deletedMessagesRow || position == casesRow || position == readAllRow
                     || position == aboutDeveloperRow || position == aboutChannelRow || position == aboutReleasesRow
                     || position == adminRow) {
                 return 3;

@@ -13752,6 +13752,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             args.putLong("user_id", UserConfig.getInstance(currentAccount).getClientUserId());
             presentFragment(new ChatActivity(args));
         });
+        io.add(R.drawable.ic_cryptogram_cases, getString(R.string.CryptogramCases), () -> {
+            presentFragment(new CryptogramCaseToolActivity(currentAccount));
+        });
         if (ApplicationLoader.applicationLoaderInstance != null) {
             ApplicationLoader.applicationLoaderInstance.addItemOptions(io);
         }
