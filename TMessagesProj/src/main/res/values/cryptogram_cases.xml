@@ -116,4 +116,18 @@
     <string name="CaseToolResultsTruncated">Showing the first %1$d of %2$d results. Paste a smaller text section to view more.</string>
     <string name="CaseToolResultsHeading">Results from pasted text</string>
     <string name="CaseToolInputTooLong">Text exceeds the 200,000-character limit.</string>
+    <string name="CryptogramBreakTitle">Break reminders</string>
+    <string name="CryptogramBreakInfo">Counts only time while Cryptogram is in the foreground. It does not read Android usage history or send data. The reminder appears inside the client.</string>
+    <string name="CryptogramBreakEnabled">Break reminder</string>
+    <string name="CryptogramBreakOn">On</string>
+    <string name="CryptogramBreakOff">Off</string>
+    <string name="CryptogramBreakInterval">Remind after</string>
+    <string name="CryptogramBreakSnoozeInterval">Snooze length</string>
+    <string name="CryptogramBreakMessage">Reminder text</string>
+    <string name="CryptogramBreakDefaultMessage">You have been in Cryptogram for a while. Time for a break?</string>
+    <string name="CryptogramBreakResetMessage">Restore default text</string>
+    <string name="CryptogramBreakTest">Show test reminder</string>
+    <string name="CryptogramBreakSnooze">Snooze</string>
+    <string name="CryptogramBreakMinutesFormat">%1$d min</string>
+    <string name="CryptogramNotificationSettings">Customize notifications</string>
 </resources>

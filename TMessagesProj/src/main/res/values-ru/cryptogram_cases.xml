@@ -116,4 +116,18 @@
     <string name="CaseToolResultsTruncated">Показаны первые %1$d из %2$d результатов. Вставьте меньший фрагмент текста, чтобы увидеть остальные.</string>
     <string name="CaseToolResultsHeading">Результаты разбора текста</string>
     <string name="CaseToolInputTooLong">Текст превышает лимит в 200 000 символов.</string>
+    <string name="CryptogramBreakTitle">Напоминания об отдыхе</string>
+    <string name="CryptogramBreakInfo">Учитывается только время, пока Cryptogram на переднем плане. История использования Android не читается, данные не отправляются. Напоминание появляется внутри клиента.</string>
+    <string name="CryptogramBreakEnabled">Напоминание об отдыхе</string>
+    <string name="CryptogramBreakOn">Включено</string>
+    <string name="CryptogramBreakOff">Выключено</string>
+    <string name="CryptogramBreakInterval">Напоминать через</string>
+    <string name="CryptogramBreakSnoozeInterval">Отложить на</string>
+    <string name="CryptogramBreakMessage">Текст напоминания</string>
+    <string name="CryptogramBreakDefaultMessage">Ты уже долго в Cryptogram. Не пора ли отдохнуть?</string>
+    <string name="CryptogramBreakResetMessage">Вернуть текст по умолчанию</string>
+    <string name="CryptogramBreakTest">Показать тестовое напоминание</string>
+    <string name="CryptogramBreakSnooze">Отложить</string>
+    <string name="CryptogramBreakMinutesFormat">%1$d мин</string>
+    <string name="CryptogramNotificationSettings">Настроить уведомления</string>
 </resources>
