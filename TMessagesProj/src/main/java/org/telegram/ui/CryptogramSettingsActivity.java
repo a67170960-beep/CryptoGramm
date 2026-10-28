@@ -68,6 +68,10 @@ public class CryptogramSettingsActivity extends BaseFragment {
     private int autoReplyRow;
     private int clockNameRow;
     private int deletedMessagesRow;
+    private int casesRow;
+    private int osintToolsRow;
+    private int breakReminderRow;
+    private int notificationSettingsRow;
     private int readAllRow;
 
     private int aboutHeaderRow;
@@ -106,6 +110,10 @@ public class CryptogramSettingsActivity extends BaseFragment {
         autoReplyRow = rowCount++;
         clockNameRow = rowCount++;
         deletedMessagesRow = rowCount++;
+        casesRow = rowCount++;
+        osintToolsRow = rowCount++;
+        breakReminderRow = rowCount++;
+        notificationSettingsRow = rowCount++;
         readAllRow = rowCount++;
 
         aboutHeaderRow = rowCount++;
@@ -214,6 +222,16 @@ public class CryptogramSettingsActivity extends BaseFragment {
                 presentFragment(new CryptogramClockNameActivity());
             } else if (position == deletedMessagesRow) {
                 presentFragment(new CryptogramDeletedMessagesActivity());
+            } else if (position == casesRow) {
+                presentFragment(new CryptogramCaseToolActivity(currentAccount));
+            } else if (position == osintToolsRow) {
+                presentFragment(new CryptogramOsintToolsActivity(currentAccount));
+            } else if (position == breakReminderRow) {
+                presentFragment(new CryptogramBreakReminderSettingsActivity(currentAccount));
+            } else if (position == notificationSettingsRow) {
+                NotificationsSettingsActivity settings = new NotificationsSettingsActivity();
+                settings.setCurrentAccount(currentAccount);
+                presentFragment(settings);
             } else if (position == readAllRow) {
                 showReadAllDialog();
             } else if (position == aboutDeveloperRow) {
@@ -304,7 +322,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
             return position == ghostModeRow || position == ghostModeTypingRow || position == ghostModeReadStatusRow || position == groupReadReceiptsRow
                     || position == disableAutoplayVideoRow || position == disableAutoSaveMediaRow || position == hideLastSeenDateRow
                     || position == disableLinkPreviewGenerationRow || position == compactChatListRow
-                    || position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == deletedMessagesRow || position == readAllRow
+                    || position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == deletedMessagesRow || position == casesRow || position == osintToolsRow || position == breakReminderRow || position == notificationSettingsRow || position == readAllRow
                     || position == aboutDeveloperRow || position == aboutChannelRow || position == aboutReleasesRow
                     || position == adminRow;
         }
@@ -413,6 +431,14 @@ public class CryptogramSettingsActivity extends BaseFragment {
                         textCell.setTextAndIcon("Время в нике", R.drawable.msg_calendar2, true);
                     } else if (position == deletedMessagesRow) {
                         textCell.setTextAndIcon("Удалённые сообщения", R.drawable.msg_delete_filled, true);
+                    } else if (position == casesRow) {
+                        textCell.setTextAndIcon(LocaleController.getString(R.string.CryptogramCases), R.drawable.ic_cryptogram_cases, true);
+                    } else if (position == osintToolsRow) {
+                        textCell.setTextAndIcon(LocaleController.getString(R.string.CryptogramOsintTools), R.drawable.ic_cryptogram_osint, true);
+                    } else if (position == breakReminderRow) {
+                        textCell.setTextAndIcon(LocaleController.getString(R.string.CryptogramBreakTitle), R.drawable.ic_cryptogram_break, true);
+                    } else if (position == notificationSettingsRow) {
+                        textCell.setTextAndIcon(LocaleController.getString(R.string.CryptogramNotificationSettings), R.drawable.ic_cryptogram_notifications, true);
                     } else if (position == readAllRow) {
                         textCell.setTextAndIcon("Прочитать всё", R.drawable.msg_check_s, true);
                     } else if (position == aboutDeveloperRow) {
@@ -442,7 +468,7 @@ public class CryptogramSettingsActivity extends BaseFragment {
             } else if (position == ghostModeInfoRow || position == ghostModeTypingInfoRow || position == ghostModeReadStatusInfoRow
                     || position == groupReadReceiptsInfoRow || position == extraInfoRow || position == aboutInfoRow) {
                 return 2;
-            } else if (position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == deletedMessagesRow || position == readAllRow
+            } else if (position == uiSettingsRow || position == autoReplyRow || position == clockNameRow || position == deletedMessagesRow || position == casesRow || position == osintToolsRow || position == breakReminderRow || position == notificationSettingsRow || position == readAllRow
                     || position == aboutDeveloperRow || position == aboutChannelRow || position == aboutReleasesRow
                     || position == adminRow) {
                 return 3;

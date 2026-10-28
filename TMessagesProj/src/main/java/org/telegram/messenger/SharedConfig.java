@@ -2155,6 +2155,8 @@ public class SharedConfig {
 
       public static String getCryptogramUiPresetName() {
           switch (cryptogramUiPreset) {
+              case -1:
+                  return "Свой сценарий";
               case 1:
                   return "Неон";
               case 2:
